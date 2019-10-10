@@ -31,6 +31,8 @@ var db = require('./das/db_action');
 var db_sql = require('./das/sql_action');
 var app = express();
 
+global.usespid              = '//kddi-research.jp';
+
 var logDirectory = __dirname + '/log';
 
 // ensure log directory exists
@@ -291,6 +293,10 @@ app.use(function (request, response, next) {
     next();
 });
 
+function isEmptyObject(obj){
+  return !Object.keys(obj).length;
+}
+
 // POST
 // (1) /das/dynamicacpinfo
 // ソースはPPMを参照する
@@ -322,7 +328,6 @@ app.post('/das/dynamicacpinfo', function (request, response) {
 // --------------- 以下は受信データの整合性のチェック（別関数に分離する？） ------------------
 		body_data = body_Obj['m2m:rqp'];
                 error="";
-
                 mandatory_keys = ['op', 'to', 'fr' ,'rqi' ,'pc'];
                 var keys = Object.keys(body_data);
 
@@ -330,8 +335,8 @@ app.post('/das/dynamicacpinfo', function (request, response) {
                 {
 		    error = "NG:Mandatory parameters NOT matched!";      // RSC(response status codeを設定する。error = 
                     responder.error_result(request, response, 500, 5000, error);
+                    return 0;
                 }
-
                 response_info = {};
 		trt = 0;
 
@@ -341,12 +346,14 @@ app.post('/das/dynamicacpinfo', function (request, response) {
         	    {
 	    		error = "NG:operation of the request is not NOTIFY.";
                         responder.error_result(request, response, 500, 5000, error);
+                        return 0;
         	    }
 
                     if((key == 'to' || key == 'fr' || key == 'rqi') && !body_data[key])
                     {
 	    		error = "NG:Parameter " + key + " of the request is empty.";
                         responder.error_result(request, response, 500, 5000, error);
+                        return 0;
                     } else {
                     	if(key == 'rqi'){
 			    response_info[key] = body_data[key];
@@ -363,6 +370,7 @@ app.post('/das/dynamicacpinfo', function (request, response) {
 			    error = "NG:Parameter " + key + " of the request is empty.";
                             console.log(error);
                             responder.error_result(request, response, 500, 5000, error);
+                            return 0;
                         }
                             seci_data = pc_data['seci'];
                             console.log(seci_data);
@@ -377,6 +385,7 @@ app.post('/das/dynamicacpinfo', function (request, response) {
                             {
 	            		console.log('NG:Mandatory security parameters NOT matched!');
                     		responder.error_result(request, response, 500, 5000, 'NG:mandatory security parameters NOT matched!');
+                                return 0;
                 	    }
 
                             for(seci_key in seci_data )
@@ -384,7 +393,7 @@ app.post('/das/dynamicacpinfo', function (request, response) {
 	                        if(seci_key == 'sit' && seci_data[seci_key] != 1)
                                 {					
                     		    responder.error_result(request, response, 500, 5000, 'NG:Parameter [sit] in [seci] is not 1(Dynamic Authorization Request).');
-                                    return;
+                                    return 0;
 				}
 
                                 if(seci_key == 'dreq')
@@ -400,6 +409,7 @@ app.post('/das/dynamicacpinfo', function (request, response) {
 		                        {
 	            			    console.log('Mandatory dreq parameter is missing!');
                     			    responder.error_result(request, response, 500, 5000, 'mandatory security parameters NOT matched!');
+					    return 0;
                 	    	        }
                                     }
                                     // dreqパラメータの処理
@@ -411,6 +421,7 @@ app.post('/das/dynamicacpinfo', function (request, response) {
 					    if( !dreq_data[dreq_key])
 					    {
 						responder.error_result(request, response, 500, 5000, 'Parameter [or] in [dreq] is empty.');
+						return 0;
 					    }
                                             else
 					    {
@@ -423,6 +434,7 @@ app.post('/das/dynamicacpinfo', function (request, response) {
 						if (dreq_data[dreq_key] != 2 && dreq_data[dreq_key] != 3 && dreq_data[dreq_key] != 4)  // ae,cnt,cinのみ
                                         	{
 					    	    responder.error_result(request, response, 500, 5000, 'Parameter ' + dreq_key + ' of the request is not supported.');
+						    return 0;
                                         	}
                                         	else
 						{
@@ -433,6 +445,7 @@ app.post('/das/dynamicacpinfo', function (request, response) {
                                         if(dreq_key == 'op' && dreq_data[dreq_key] != 2)
 					{
 					    responder.error_result(request, response, 500, 5000, 'Parameter ' + dreq_key + ' of the request is not supported.');
+					    return 0;
 					}
 					// オリジナルのPPMでは、trid (option)が存在しないとエラー。これは、情報が無いとACPを決定できないから。
                                         if(dreq_key == 'trid')
@@ -440,6 +453,7 @@ app.post('/das/dynamicacpinfo', function (request, response) {
 					    if( !dreq_data[dreq_key])
 					    {
 						responder.error_result(request, response, 500, 5000, 'Parameter [trid] in [dreq] is empty.');
+						return 0;
 					    }
                                             else
 					    {
@@ -503,7 +517,13 @@ app.post('/das/dynamicacpinfo', function (request, response) {
 		db_sql.select_acp(trid_info,response_info['or'],function(err,result){
                     console.log(err);
                     console.log(result);
-
+                    console.log(typeof(result));
+                    console.log(!Object.keys(result).length);
+                    if(isEmptyObject(result)){
+			console.log("no matched data found");
+			responder.error_result(request, response, 500, 5000, 'No data found in DB.');
+                        return 0;
+		    }
 //		    if(err && result != []){  // sqlのエラーはないが、結果がnullのケースあり。resultは空リスト。
 		    if(result != []){  // sqlのエラーはないが、結果がnullのケースあり。resultは空リスト。
 			// return ACP info. resultにはacpの検索結果が入ってくる
@@ -554,9 +574,11 @@ app.post('/das/dynamicacpinfo', function (request, response) {
 			final_response['m2m.rsp'] = response_hash;
 			console.log(JSON.stringify(final_response));
 			responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
+                        return 0;
 		    }else{
 			console.log('no trid and or combination');
 			responder.error_result(request, response, 500, 5000, body_Obj['dbg']);
+                        return 0;
 		    }
 		});
 /*
@@ -864,6 +886,7 @@ app.get('/das/acp', function(request, response) {
         // parameter error
         //	    responder.error_result(request, response, 500, 5000, 'parameter error');
         responder.error_result(request, response, 500, 5000, 'Exception Error.');
+        return 0;
     }
     // パラメータチェックOKなので、ACP取得処理
     db_sql.select_acp(request.query['trid'], request.query['or'], function(err, result) {
@@ -903,7 +926,9 @@ app.put('/das/rce/_/:resource_uri', function(request, response) {
     request.on('end', function() {
         request.body = fullBody;
         if (request.body == "") {
-            responder.error_result(request, response, 400, 4000, 'body is empty');
+            console.log('body is empty');
+//            responder.error_result(request, response, 400, 4000, 'body is empty');
+            responder.error_result(request, response, 500, 5000, 'Exception Error.');
             return '0';
         }
         // Body部のデータチェック。根本的に見直す必要がある。JSONに変換している部分は生きも。
