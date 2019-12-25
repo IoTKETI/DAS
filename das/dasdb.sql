@@ -75,7 +75,7 @@ CREATE TABLE `ae` (
 
 --
 -- Table structure for table `cnt`
--- (2019/9/12 containerIDの追加）
+-- (2019/9/12 containerID�̒ǉ��j
 
 DROP TABLE IF EXISTS `cnt`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;

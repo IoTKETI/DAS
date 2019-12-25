@@ -9,18 +9,28 @@
  */
 
 var fs = require('fs');
-var data = fs.readFileSync('conf.json', 'utf-8');
+var data = fs.readFileSync('conf-ae.json', 'utf-8');
 var conf = JSON.parse(data);
 
 global.defaultbodytype      = 'json';
 
-// CSE information
+// DAS-AE information
+ global.usedasaeid	    = conf.dasaeid;
+ global.usedasaern	    = conf.dasaern;
+ global.usedasaebaseport    = conf.dasaebaseport;
 
- global.usedasbaseport       = conf.dasbaseport;
- global.usedbhost            = 'localhost';
- global.usedbpass            = conf.dbpass;
+// DAS information
+ global.usedashost	    = 'localhost';
+ global.usedasport	    = '7580';
+
+// CSE information
+ global.usecsehost           = 'ppmoceankato.japaneast.cloudapp.azure.com';
+ global.usecseport           = '7579';
+ global.usespid              = '//sample.a';
+ global.usecseid             = '/mb-cse-a';
+ global.usecsebase           = 'mb-base-a';
 
  global.use_secure           = 'disable';
 
-// DAS core
-require('./app');
+// Call DAS-AE core
+require('./app-ae');
