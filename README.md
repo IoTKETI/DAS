@@ -98,7 +98,28 @@ dasaebaseport is the service port number for DAS-AE module
     "dasaebaseport": "7581"
 }
 ```
-### 4.2 Start DAS-AE  module
+
+### 4.2 Configure CSE/DAS info
+```
+$ sudo vi ~/DAS/das-ae.js
+```
+
+
+```
+// DAS information
+ global.usedashost	    = 'localhost';
+ global.usedasport	    = '7580';
+
+// CSE information
+ global.usecsehost      = 'ocean.local.com';
+ global.usecseport      = '7579';
+ global.usespid         = '//sample.a';
+ global.usecseid        = '/mb-cse-a';
+ global.usecsebase      = 'mb-base-a';
+```
+
+
+### 4.3 Start DAS-AE  module
 
 ```
 $ node das-ae.js
@@ -114,3 +135,4 @@ das-ae (http) (10.0.75.1) running at 7581 port
 [SwaggerEditor](https://editor.swagger.io/)
 
 [End]
+
