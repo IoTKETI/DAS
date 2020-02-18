@@ -12,21 +12,6 @@ $ sudo service mysql start
 ```
 
 ## 2.Node.js
-### 2.1 nvm install
-```
-git clone https://github.com/creationix/nvm.git ~/.nvm
-source ~/.nvm/nvm.sh
-```
-
-### 2.2 node install (ver12.9.0)
-```
-$ nvm ls-remote
-$ nvm install 12.9.0
-$ node -v
-v12.9.0
-```
-
-### 2.3 node install (Obsolete)
 ```
 $ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 $ sudo apt install -y nodejs

@@ -460,23 +460,22 @@ exports.select_acp = function(trid, or, callback) {
 exports.select_acps_from_roleids = function(roleids, callback) {
     console.log('select_acps_from_roleids');
 
-    roleids_str ="";
+    acps = [];
     for (roleid of roleids){
-	if(roleids_str.length == 0)
-            roleids_str = "where rlid in (" + roleid;
-	else
-	    roleids_str = roleids_str + "," + rolid;
-    }
-
-    roleids_str = roleids_str + ")";
-    console.log("roleids_str =",roleids_str);
-	var sql = util.format("select * from acp " + roleids_str);
+	var sql = util.format("select * from acp where rlid = \'%s\'", roleid);
     	console.log(sql);
+        // the acps could be more than one.
         db.getResult(sql, '', function (err, results) {
-            console.log(err);
-	    console.log(results);
-            callback(err, results);
+	    if(err){
+        	console.log(err);
+	        console.log(results);
+            	callback(err, results);
+            }else{
+		acps.push[results];
+            }
         });
+    }
+    console.log('acps =', acps);
 };
 
 exports.select_acp_from_roleid = function(roleid, callback) {
@@ -988,28 +987,6 @@ exports.delete_token = function(obj, callback) {
         callback(err, results);
     });
 }
-
-exports.select_tokens_from_tokenids = function(tokenids, callback) {
-    console.log('select_tokens_from_tokenid');
-
-    tokenids_str ="";
-    for (tokenid of tokenids){
-	if(tokenids_str.length == 0)
-            tokenids_str = "where tkid in (" + tokenid;
-	else
-	    tokenids_str = tokenids_str + "," + tokenid;
-    }
-
-    tokenids_str = tokenids_str + ")";
-    console.log("tokenids_str =",tokenids_str);
-	var sql = util.format("select tkob from token " + tokenids_str);
-    	console.log(sql);
-        db.getResult(sql, '', function (err, results) {
-            console.log(err);
-	    console.log(results);
-            callback(err, results);
-        });
-};
 
 exports.select_token = function(tokenid, callback) {
     console.log(tokenid);

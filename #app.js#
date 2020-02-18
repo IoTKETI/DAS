@@ -95,7 +95,7 @@ console.log('SPID=',usespid);
 console.log('CSEID=',usecseid);
 console.log('CSEBase=',usecsebase);
 
-// request.body‚Ì“à—e‚ğ‰ğÍ‚µ‚ÄAŠeƒoƒCƒ“ƒfƒBƒ“ƒOƒvƒƒgƒRƒ‹‚ğJSONŒ`®‚É•ÏŠ·‚µ‚½Œ‹‰Ê‚ğArequest.body‚Éã‘‚«
+// request.bodyã®å†…å®¹ã‚’è§£æã—ã¦ã€å„ãƒã‚¤ãƒ³ãƒ‡ã‚£ãƒ³ã‚°ãƒ—ãƒ­ãƒˆã‚³ãƒ«ã‚’JSONå½¢å¼ã«å¤‰æ›ã—ãŸçµæœã‚’ã€request.bodyã«ä¸Šæ›¸ã
 function parse_to_json(request, response, callback) {
     var body_Obj = {};
 
@@ -141,7 +141,7 @@ console.log('rootnm=',request.headers.rootnm);
 console.log(prop);
 //                if (body_Obj.hasOwnProperty(prop)) {
 //                    for (var attr in body_Obj[prop]) {
-                        // Object‚Ìattribute‚ªJSONŒ`®‚É‚È‚Á‚Ä‚¢‚é‚±‚Æ‚ğƒ`ƒFƒbƒN‚·‚é
+                        // Objectã®attributeãŒJSONå½¢å¼ã«ãªã£ã¦ã„ã‚‹ã“ã¨ã‚’ãƒã‚§ãƒƒã‚¯ã™ã‚‹
 //                        if (body_Obj[prop].hasOwnProperty(attr)) {
 console.log('attr=',body_Obj[prop]);
 			attr=body_Obj[prop];
@@ -279,9 +279,9 @@ console.log('attr=',body_Obj[prop]);
     });
 }
 
-// CORS‘Î‰
+// CORSå¯¾å¿œ
 app.use(function (req, res, next) {
-//    console.log("CORS‘Î‰");
+//    console.log("CORSå¯¾å¿œ");
     res.header('Access-Control-Allow-Origin', '*');
     res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, X-M2M-RI, X-M2M-RVI, X-M2M-RSC, Accept, X-M2M-Origin, Locale');
@@ -349,10 +349,10 @@ function UserException(message) {
 // POST
 // (1) /das/dynamicacpinfo
 //
-// ƒ\[ƒX‚ÍPPM‚ğQÆ‚·‚é
+// ã‚½ãƒ¼ã‚¹ã¯PPMã‚’å‚ç…§ã™ã‚‹
 // domains, originatorIDs(List of CSIDs and/or AEIDs (wild character'*' is allowed match detection is terminated by next '/'), all, Role-IDs
-// 'all'@‘S‚n‚j
-// ‚¢‚¸‚ê‚©‚Éˆê’viwild character‚É’ˆÓj
+// 'all'ã€€å…¨ï¼¯ï¼«
+// ã„ãšã‚Œã‹ã«ä¸€è‡´ï¼ˆwild characterã«æ³¨æ„ï¼‰
 // 
 // Name		Description										Wildcard applicability
 // domain	A M2M-SP-ID representing domain/subdomain						Allowed
@@ -422,7 +422,7 @@ function checkOriginators(rq_or,stored_acor){
 	}
 }
 
-// 0-63 ‚Ì”’lBAND‚ğæ‚é‚©Hcallback‚Å’l‚ğ•Ô‚·‚æ‚¤‚É•ÏX‚µ‚È‚¢‚Æƒ_ƒ
+// 0-63 ã®æ•°å€¤ã€‚ANDã‚’å–ã‚‹ã‹ï¼Ÿcallbackã§å€¤ã‚’è¿”ã™ã‚ˆã†ã«å¤‰æ›´ã—ãªã„ã¨ãƒ€ãƒ¡
 // 6.3.4.2.29	m2m:accessControlOperations
 // Used for accessControlPolicys.
 // Table 6.3.4.2.29 1: Interpretation of accessControlOperations
@@ -434,7 +434,7 @@ function checkOriginators(rq_or,stored_acor){
 // 16		NOTIFY
 // 32		DISCOVERY	
 // NOTE:	Combinations of these values are specified by adding them together. For example the value 5 is interpreted as "CREATE and UPDATE".
-// ‰ÁZ‚Å‚n‚jB5= CREATE+UPDATE
+// åŠ ç®—ã§ï¼¯ï¼«ã€‚5= CREATE+UPDATE
 
 function checkOperations(rq_op, acop){
 
@@ -448,17 +448,17 @@ function checkOperations(rq_op, acop){
 
 // TS-0004 7.3.8 
 // Add time window check logic here 
-// https://www.npmjs.com/package/node-cron@¨@”N‚ğƒ`ƒFƒbƒN‚Å‚«‚È‚¢
-// "actw" : ["* 0-5 2,6,10 * * * *"] •bA•ªAA“úAŒA—j“úA”N@¨–ˆ“úA25•ªA65•ªA105•ª
-// ã‹L‚ÌPackage‚Ìƒ`ƒFƒbƒNƒR[ƒh‚Ì‚İ‚ğ”qØ‚·ipattern-validation.js‚ÅŒ`®‚ğƒ`ƒFƒbƒN‚µ‚ÄAtime-matcher.js¶¬‚Æƒ}ƒbƒ`‚·‚éjB
-//    1)”N‚ÍŠg’£‚·‚é•K—v‚ª‚ ‚é
-//    2)Month,Wee-day-name‚Í•¶š—ñ‚ª“ü‚ç‚È‚¢‚Ì‚ÅA“Á‚É•s—vB
-// https://github.com/node-cron/node-cron/blob/2a3970390b8dffa20b0a1bbf5ba2f71e8b4405d2/src/pattern-validation.js#L28 QÆ
-// 1.—v‹‚ğŠe—v‘f‚É•ª‰ğ(ƒXƒy[ƒX‹æØ‚è¨•¡”ƒXƒy[ƒX‚ÍƒVƒ“ƒOƒ‹ƒXƒy[ƒX‚É•ÏŠ·j
-// 2.actw‚Ì*‚â-ASteps(0-23/2 ¨0,2,4,6,8,10,12,14,16,18,20,22)‚È‚Ç‚ÍA‘S‚Ä”š‚ÌƒŠƒXƒg‚É’¼‚·
-// 3.—v‹‚ÌŠe—v‘f‚ª2‚Ì‘Î‰‚·‚éƒŠƒXƒg‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚é‚©‚ğƒ`ƒFƒbƒN‚µA‘S‚Ä‚Ìƒ`ƒFƒbƒN‚ª‚n‚j‚È‚ç‚n‚jB
+// https://www.npmjs.com/package/node-cronã€€â†’ã€€å¹´ã‚’ãƒã‚§ãƒƒã‚¯ã§ããªã„
+// "actw" : ["* 0-5 2,6,10 * * * *"] ç§’ã€åˆ†ã€æ™‚ã€æ—¥ã€æœˆã€æ›œæ—¥ã€å¹´ã€€â†’æ¯æ—¥ã€2æ™‚5åˆ†ã€6æ™‚5åˆ†ã€10æ™‚5åˆ†
+// ä¸Šè¨˜ã®Packageã®ãƒã‚§ãƒƒã‚¯ã‚³ãƒ¼ãƒ‰ã®ã¿ã‚’æ‹å€Ÿã™ï¼ˆpattern-validation.jsã§å½¢å¼ã‚’ãƒã‚§ãƒƒã‚¯ã—ã¦ã€time-matcher.jsç”Ÿæˆæ™‚åˆ»ã¨ãƒãƒƒãƒã™ã‚‹ï¼‰ã€‚
+//    1)å¹´ã¯æ‹¡å¼µã™ã‚‹å¿…è¦ãŒã‚ã‚‹
+//    2)Month,Wee-day-nameã¯æ–‡å­—åˆ—ãŒå…¥ã‚‰ãªã„ã®ã§ã€ç‰¹ã«ä¸è¦ã€‚
+// https://github.com/node-cron/node-cron/blob/2a3970390b8dffa20b0a1bbf5ba2f71e8b4405d2/src/pattern-validation.js#L28 å‚ç…§
+// 1.è¦æ±‚æ™‚åˆ»ã‚’å„è¦ç´ ã«åˆ†è§£(ã‚¹ãƒšãƒ¼ã‚¹åŒºåˆ‡ã‚Šâ†’è¤‡æ•°ã‚¹ãƒšãƒ¼ã‚¹ã¯ã‚·ãƒ³ã‚°ãƒ«ã‚¹ãƒšãƒ¼ã‚¹ã«å¤‰æ›ï¼‰
+// 2.actwã®*ã‚„-ã€Steps(0-23/2 â†’0,2,4,6,8,10,12,14,16,18,20,22)ãªã©ã¯ã€å…¨ã¦æ•°å­—ã®ãƒªã‚¹ãƒˆã«ç›´ã™
+// 3.è¦æ±‚æ™‚åˆ»ã®å„è¦ç´ ãŒ2ã®å¯¾å¿œã™ã‚‹ãƒªã‚¹ãƒˆã«å«ã¾ã‚Œã¦ã„ã‚‹ã‹ã‚’ãƒã‚§ãƒƒã‚¯ã—ã€å…¨ã¦ã®ãƒã‚§ãƒƒã‚¯ãŒï¼¯ï¼«ãªã‚‰ï¼¯ï¼«ã€‚
 // 
-// ACTWiTS-0004 v3.7.0 Sction.7.4.9)
+// ACTWï¼ˆTS-0004 v3.7.0 Sction.7.4.9)
 // The scheduleElement attribute represents the list of scheduled execution times.
 // The each entry of the scheduleElelement attribute shall consist of a line with 7 field values (See Table 7.4.9.1-4). 
 // The time to be matched with the schedule pattern shall be interpreted in UTC timezone.
@@ -500,7 +500,7 @@ function checkTimeWindows(rq_time, actw, callback){
 	    throw new UserException("No matching ACTW info");
 }
 
-// ACP‚Ìƒf[ƒ^‚ÍAip4/ip6‚ÌƒŠƒXƒg‚Ì•Ğ•û‚ ‚é‚¢‚Í—¼•û‚ğ•Û‚·‚é
+// ACPã®ãƒ‡ãƒ¼ã‚¿ã¯ã€ip4/ip6ã®ãƒªã‚¹ãƒˆã®ç‰‡æ–¹ã‚ã‚‹ã„ã¯ä¸¡æ–¹ã‚’ä¿æŒã™ã‚‹
 // accessControlIpAddresses (acip)
 // Add ip address check logic here 
 //  if( ipaddr.IPv4.isIPv4(rq_ip) )
@@ -552,17 +552,17 @@ function checkIPAddress(rq_ip,acip){
         // [lat,long,radius], list of country code
         // https://www.npmjs.com/package/geolocation-utils
         // distanceTo(from: Location, to: Location) : number[ in meters ]
-        // 2“_ŠÔ‚Ì‹——£‚ğŒvZ‚·‚éB‚±‚ÌŒ‹‰Ê‚ªAR(adius)ˆÈ‰º‚Å‚ ‚ê‚Î‚n‚j‚Æ‚È‚é
+        // 2ç‚¹é–“ã®è·é›¢ã‚’è¨ˆç®—ã™ã‚‹ã€‚ã“ã®çµæœãŒã€R(adius)ä»¥ä¸‹ã§ã‚ã‚Œã°ï¼¯ï¼«ã¨ãªã‚‹
         // Element Path       |	      Element Data Type 	| Multiplicity	| Note
  	// circRegion(accr)   |       List of 3 xs:float        | 0..1		| The values represent latitude (+/-90 degrees), longitude (+/-180 degrees), and radius (metres)
         // countryCode(accc)  |       list of m2m:countryCode	| 0..1		|
         //
-        // (Šî–{“I‚É‚ÍATS-0004 6.3.5.28	m2m:locationRegion‚Å‚ÍA‚Ç‚¿‚ç‚©‚Ì‚İ‘¶İ‚·‚é‚ªADAS‚Í—¼•û‚Ì‹Lq‚ª‚ ‚Á‚Ä‚àOKj
+        // (åŸºæœ¬çš„ã«ã¯ã€TS-0004 6.3.5.28	m2m:locationRegionã§ã¯ã€ã©ã¡ã‚‰ã‹ã®ã¿å­˜åœ¨ã™ã‚‹ãŒã€DASã¯ä¸¡æ–¹ã®è¨˜è¿°ãŒã‚ã£ã¦ã‚‚OKï¼‰
 
         // circRegion: {geolocation1,geolocation2,geolocation3,...}, geolocation = List of 3 xs:float	0..1	The values represent latitude (+/-90 degrees), longitude (+/-180 degrees), and radius (metres)
         // countryCode	list of m2m:countryCode	0..1	
 	//
-        // ŒvZƒƒWƒbƒN
+        // è¨ˆç®—ãƒ­ã‚¸ãƒƒã‚¯
 	// import { 
 	//  toLatLon, toLatitudeLongitude, headingDistanceTo, moveTo, insidePolygon 
 	// } from 'geolocation-utils'
@@ -587,7 +587,7 @@ function checkIPAddress(rq_ip,acip){
         // }
         // return new_rq_loc;
         //
-        // IP‚©‚çˆÊ’uî•ñ‚ğæ“¾‚·‚é‚±‚Æ‚à‰Â”\‚¾‚ªA‚±‚±‚Å‚Í‚â‚ç‚È‚¢
+        // IPã‹ã‚‰ä½ç½®æƒ…å ±ã‚’å–å¾—ã™ã‚‹ã“ã¨ã‚‚å¯èƒ½ã ãŒã€ã“ã“ã§ã¯ã‚„ã‚‰ãªã„
         // aclr['accr'] = [lat in degree (0=< =<90), long in degree (0=< =<180)
 
 function checkGeoLocation(rq_loc,aclr){
@@ -631,8 +631,8 @@ function checkGeoLocation(rq_loc,aclr){
 		   console.log('No country code exists for matching');
 		   throw new UserException('No country code for matching');
 		}
-		// List“¯m‚ğ”äŠr‚µ‚ÄArequest‚ÉŠÜ‚Ü‚ê‚é‘ƒR[ƒh‚ªAACP‘¤‚ÉŠÜ‚Ü‚ê‚éê‡‚ÉA‹–‰ÂƒŠƒXƒg‚É’Ç‰Á‚·‚é
-		// ŠÜ‚Ü‚ê‚È‚¢‘ƒR[ƒh‚ÍA‹–‰ÂƒŠƒXƒg‚É‚ÍŠÜ‚ß‚È‚¢
+		// ListåŒå£«ã‚’æ¯”è¼ƒã—ã¦ã€requestã«å«ã¾ã‚Œã‚‹å›½ã‚³ãƒ¼ãƒ‰ãŒã€ACPå´ã«å«ã¾ã‚Œã‚‹å ´åˆã«ã€è¨±å¯ãƒªã‚¹ãƒˆã«è¿½åŠ ã™ã‚‹
+		// å«ã¾ã‚Œãªã„å›½ã‚³ãƒ¼ãƒ‰ã¯ã€è¨±å¯ãƒªã‚¹ãƒˆã«ã¯å«ã‚ãªã„
 		console.log('checking country codes=',rq_loc );
 		console.log(' is included in the list of country codes=',aclr['accc']);
 
@@ -752,7 +752,7 @@ app.post('/das/dynaAuth', function (request, response) {
                            responder.error_result(request, response, 500, 5000, 'NG:Parameter [sit] in [seci] is not 1(Dynamic Authorization Request).');
                            return 0;
 		       }
-                       // dreqƒpƒ‰ƒ[ƒ^‚Ìˆ—
+                       // dreqãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å‡¦ç†
                        if(seci_key == 'dreq'){
                            dreq_data = seci_data[seci_key];
                            console.log('dreq=', dreq_data);
@@ -782,7 +782,7 @@ app.post('/das/dynaAuth', function (request, response) {
 			       }
 			       // targetedResourceType	m2m:resourceType
 			       if(dreq_key == 'trt'){
-			           if (dreq_data[dreq_key] != 2 && dreq_data[dreq_key] != 3 && dreq_data[dreq_key] != 4){   // ae,cnt,cin‚Ì‚İ
+			           if (dreq_data[dreq_key] != 2 && dreq_data[dreq_key] != 3 && dreq_data[dreq_key] != 4){   // ae,cnt,cinã®ã¿
 			               responder.error_result(request, response, 500, 5000, 'Parameter ' + dreq_key + ' of the request is not supported.');
 				       return 0;
                                    } else
@@ -887,9 +887,9 @@ app.post('/das/dynaAuth', function (request, response) {
             return 0;
 	}
 
-	// Phase2‚Å‚ÍToken‚àƒTƒ|[ƒg‚·‚é
+	// Phase2ã§ã¯Tokenã‚‚ã‚µãƒãƒ¼ãƒˆã™ã‚‹
 	console.log('Check the validity of received request');
-        // header (X-M2M-RI‚âANotify‚Å•ÔM‚·‚é•K—v‚ª‚ ‚éBPOSTj
+        // header (X-M2M-RIã‚„ã€Notifyã§è¿”ä¿¡ã™ã‚‹å¿…è¦ãŒã‚ã‚‹ã€‚POSTï¼‰
 
 	// Phase3
 	// Step 1.Check if token-id exits in the received parameters.
@@ -955,8 +955,9 @@ app.post('/das/dynaAuth', function (request, response) {
 			console.log('result2 =',result);
    		        result_objects = JSON.parse(JSON.stringify(result[0]));
 			for (result_object in result_objects){
-			    acop = result_object['op'];
 			    policy_data = result_object['policy'];  // Add acop
+			    policy_data['acop'] = result_object['op'];
+			    policy_data['acor'] = result_object['or'];
 			}
                         console.log('result_object = ', result_objects);
 //			console.log('policy_data=', policy_data);
@@ -975,12 +976,12 @@ app.post('/das/dynaAuth', function (request, response) {
 	//	No: Send back dynaAuthDASResponse with empty content in sit
         // When any one of the above steps(1-3) is succeeded, DAS sends back the dynaAuthDASResponse to HCSE.
 
-	// trt == 4 (contentInstance‚Ìê‡‚ÍAcontainer‚Ìtrid‚ğæ“¾‚µ‚ÄAcontainer‚ÌACP‚ğ•ÔM‚·‚éj
+	// trt == 4 (contentInstanceã®å ´åˆã¯ã€containerã®tridã‚’å–å¾—ã—ã¦ã€containerã®ACPã‚’è¿”ä¿¡ã™ã‚‹ï¼‰
 	    if (response_info['trt'] == 4) {
 		data_len = response_info['trid'].length;
 		splitted_path = response_info['trid'].split('/');
 		path_depth = splitted_path.length;
-		trid_info = response_info['trid'].substr(0,data_len-(splitted_path[path_depth-1].length + 1));  // ÅŒã‚Ì1‚Í'/'•ª
+		trid_info = response_info['trid'].substr(0,data_len-(splitted_path[path_depth-1].length + 1));  // æœ€å¾Œã®1ã¯'/'åˆ†
 	    }else{
 		trid_info = response_info['trid'];
             }
@@ -1076,8 +1077,8 @@ app.post('/das/dynaAuth', function (request, response) {
 		}
 		
 		// check ACOD(resourceType,specializationID,childResourceType)
-		// •K{‚ÍAchildResourceType‚ÍqƒŠƒ\[ƒX‚ÌƒŠƒXƒgBì¬‚³‚ê‚ée‚Ì”z‰º‚Éw’è‚³‚ê‚éq‚Ìƒ^ƒCƒv‚ªCreate‚³‚ê‚éê‡‚É‚Ì‚İACP‚ª“K—p‚³‚ê‚é
-		// ACOD‚ª‘¶İ‚µ‚È‚¢ê‡‚ÍAe‚Ì”z‰º‚ÉCREATE‚³‚ê‚éqƒŠƒ\[ƒX‚Ì‘S‚Ä‚ÉACP‚ª“K—p‚³‚ê‚é
+		// å¿…é ˆã¯ã€childResourceTypeã¯å­ãƒªã‚½ãƒ¼ã‚¹ã®ãƒªã‚¹ãƒˆã€‚ä½œæˆã•ã‚Œã‚‹è¦ªã®é…ä¸‹ã«æŒ‡å®šã•ã‚Œã‚‹å­ã®ã‚¿ã‚¤ãƒ—ãŒCreateã•ã‚Œã‚‹å ´åˆã«ã®ã¿ACPãŒé©ç”¨ã•ã‚Œã‚‹
+		// ACODãŒå­˜åœ¨ã—ãªã„å ´åˆã¯ã€è¦ªã®é…ä¸‹ã«CREATEã•ã‚Œã‚‹å­ãƒªã‚½ãƒ¼ã‚¹ã®å…¨ã¦ã«ACPãŒé©ç”¨ã•ã‚Œã‚‹
 		console.log("ACOD is not supported");
 
 		// check ACAF (no operation at the moment)
@@ -1094,8 +1095,8 @@ app.post('/das/dynaAuth', function (request, response) {
 		    }
 		}
 		
-		// pl‚ª‘¶İ‚µ‚È‚¢ê‡‚ÍAppl‚ªóMƒf[ƒ^‚É‚ ‚ê‚Î‚»‚ê‚ğİ’è‚·‚éB
-		// pl‚àAppl‚à‘¶İ‚µ‚È‚¢ê‡‚ÍAdefault’l 3600000milli•b‚Æ‚·‚éB
+		// plãŒå­˜åœ¨ã—ãªã„å ´åˆã¯ã€pplãŒå—ä¿¡ãƒ‡ãƒ¼ã‚¿ã«ã‚ã‚Œã°ãã‚Œã‚’è¨­å®šã™ã‚‹ã€‚
+		// plã‚‚ã€pplã‚‚å­˜åœ¨ã—ãªã„å ´åˆã¯ã€defaultå€¤ 3600000milliç§’ã¨ã™ã‚‹ã€‚
 		if('pl' in policy_data){
 		    //		    ppl_val =  moment().utc().add(1,'h').format('YYYYMMDDTHHmmss');
          	    ppl_val =  moment().add(1,'h').format('YYYYMMDDTHHmmss');
@@ -1127,7 +1128,7 @@ app.post('/das/dynaAuth', function (request, response) {
 		dres['dai'] = dai;
 		console.log('dres = ',dres);
 
-		//@Add list of tokens. ESData shoule be applied to Each token.
+		//ã€€Add list of tokens. ESData shoule be applied to Each token.
 		token.createTokenFromACP(dai,response_info['or'],response_info['trid'],'JWE',function(err,result){
 		console.log('token =', result);
 		dres['tkns'] = [result];
@@ -1148,25 +1149,25 @@ app.post('/das/dynaAuth', function (request, response) {
 });
 
 
-// (2) /das/acp ”F‰Âî•ñ‚Ì“o˜^/XV(“o˜^Ï‚Ìê‡‚ÍXV‚·‚éj
-// ƒpƒ‰ƒ[ƒ^–¼			•K{
-// ƒ^[ƒQƒbƒgID			›
-// ƒŠƒNƒGƒXƒgŒ³ID			›
-// ƒ†[ƒUID				
-// ACPî•ñ			›
-// 	‹–‰ÂƒIƒyƒŒ[ƒVƒ‡ƒ“		›
-// 	—LŒøŠÔ			›
+// (2) /das/acp èªå¯æƒ…å ±ã®ç™»éŒ²/æ›´æ–°(ç™»éŒ²æ¸ˆã®å ´åˆã¯æ›´æ–°ã™ã‚‹ï¼‰
+// ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿å			å¿…é ˆ
+// ã‚¿ãƒ¼ã‚²ãƒƒãƒˆID			â—‹
+// ãƒªã‚¯ã‚¨ã‚¹ãƒˆå…ƒID			â—‹
+// ãƒ¦ãƒ¼ã‚¶ID				
+// ACPæƒ…å ±			â—‹
+// 	è¨±å¯ã‚ªãƒšãƒ¬ãƒ¼ã‚·ãƒ§ãƒ³		â—‹
+// 	æœ‰åŠ¹æ™‚é–“			â—‹
 //      ACCO
 // 		accessControWindow			
 // 		accessControlIpAddresses		
 // 		accessControlLocationRegion		
 // 	accessControlAuthenticationFlag			
-// 	ƒg[ƒNƒ“IDƒŠƒXƒg				
+// 	ãƒˆãƒ¼ã‚¯ãƒ³IDãƒªã‚¹ãƒˆ				
 
 app.post('/das/acp', function(request, response) {
     console.log('app.post acp regist\n');
-    // acp‚ª“o˜^Ï‚İ‚È‚çAXVˆ—‚ğs‚¤
-    // “o˜^Ï‚İ‚©‚Ç‚¤‚©‚Ì”»’è‚ÍH@usr‚ÍƒIƒvƒVƒ‡ƒ“‚È‚Ì‚ÅAtrid/or‚ªˆê’v‚·‚é‚©‚Ç‚¤‚©‚ÅŒ©‚é‚Ì‚©Hpolicy‚Í•K{‚¾‚ª”äŠr‘ÎÛ‚Å‚Í‚È‚¢B
+    // acpãŒç™»éŒ²æ¸ˆã¿ãªã‚‰ã€æ›´æ–°å‡¦ç†ã‚’è¡Œã†
+    // ç™»éŒ²æ¸ˆã¿ã‹ã©ã†ã‹ã®åˆ¤å®šã¯ï¼Ÿã€€usrã¯ã‚ªãƒ—ã‚·ãƒ§ãƒ³ãªã®ã§ã€trid/orãŒä¸€è‡´ã™ã‚‹ã‹ã©ã†ã‹ã§è¦‹ã‚‹ã®ã‹ï¼Ÿpolicyã¯å¿…é ˆã ãŒæ¯”è¼ƒå¯¾è±¡ã§ã¯ãªã„ã€‚
 
     get_body_json_data(request, function(err, result) {
         if (!err) {
@@ -1186,22 +1187,22 @@ app.post('/das/acp', function(request, response) {
 //                return '0';
             }
 
-            // regist acp info (policy ‚Í‚»‚Ì‚Ü‚ÜDB‚É•Û‘¶‚·‚éj
+            // regist acp info (policy ã¯ãã®ã¾ã¾DBã«ä¿å­˜ã™ã‚‹ï¼‰
             db_sql.insert_acp(body_Obj, function(err, results) {
                 if (!err) {
                     console.log('acp inserted!');
-                    // response‚ÍAXV‚³‚ê‚½ACP‚ğGet‚µ‚½‚à‚ÌB
+                    // responseã¯ã€æ›´æ–°ã•ã‚ŒãŸACPã‚’Getã—ãŸã‚‚ã®ã€‚
 /*
                     db_sql.select_acp(body_Obj['trid'], body_Obj['or'], function(err, result) {
 		            responder.response_result(request, response, 200, JSON.stringify(result[0]), 2000, '');
                     });
 */
 		    db_sql.select_acp(body_Obj['trid'], body_Obj['or'],function(err, result) {
-        		// trid/or‚Åw’è‚·‚éƒf[ƒ^‚ª‘¶İ‚µ‚È‚¢ê‡Aerr=null, result=[]‚ªsqlƒŒƒxƒ‹‚Å•Ô‚é
+        		// trid/orã§æŒ‡å®šã™ã‚‹ãƒ‡ãƒ¼ã‚¿ãŒå­˜åœ¨ã—ãªã„å ´åˆã€err=null, result=[]ãŒsqlãƒ¬ãƒ™ãƒ«ã§è¿”ã‚‹
 			console.log(err);
 			console.log(result);
         		if (!err) {
-            		    responder.response_result(request, response, 200, JSON.stringify(result[0]), 2000, ''); // return ACP info. result‚É‚Íacp‚ÌŒŸõŒ‹‰Ê‚ª“ü‚Á‚Ä‚­‚é
+            		    responder.response_result(request, response, 200, JSON.stringify(result[0]), 2000, ''); // return ACP info. resultã«ã¯acpã®æ¤œç´¢çµæœãŒå…¥ã£ã¦ãã‚‹
         		} else {
 	    		    console.log('no data found');
             		    responder.error_result(request, response, 500, 5000, 'Exception Error.');
@@ -1225,39 +1226,39 @@ app.post('/das/acp', function(request, response) {
     });
 });
 
-// (3) ƒŠƒ\[ƒX‚Ì“o˜^iCSE, ae, cnt, ACPj
+// (3) ãƒªã‚½ãƒ¼ã‚¹ã®ç™»éŒ²ï¼ˆCSE, ae, cnt, ACPï¼‰
 
 app.post('/das/rce', function(request, response) {
     console.log('app.post rsc regist\n');
     get_body_json_data(request, function(err, result) {
         if (!err) {
             request.bodyObj = result;
-            // •K{ƒpƒ‰ƒ[ƒ^‚Ìƒ`ƒFƒbƒN
+            // å¿…é ˆãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®ãƒã‚§ãƒƒã‚¯
             if (!body_Obj['url'] || !body_Obj['ty'] || !body_Obj['sri']) {
                 console.log('Mandatory data is missing');
                 body_Obj['dbg'] = 'Exception Error.';
                 responder.error_result(request, response, 500, 5000, body_Obj['dbg']);
                 return '0';
             }
-            // resource‚Ìî•ñ‚ğlookupƒe[ƒuƒ‹‚Éì¬‚·‚éBì¬‚É@¸”s‚µ‚½‚çAƒGƒ‰[‚Å•Ô‚·B
-            // ty‚©‚çA•Û‘¶‚·‚éƒe[ƒuƒ‹‚ğ‘I‘ğ‚·‚éB
-            // ‚»‚Ìƒe[ƒuƒ‹‚É‘Î‚µ‚ÄAƒŠƒ\[ƒXî•ñ‚ğì¬‚·‚éBì¬‚É¸”s‚µ‚½‚çAlookupƒe[ƒuƒ‹‚Åì¬‚µ‚½ƒŠƒ\[ƒX‚ğíœ‚µ‚½ã‚ÅAƒGƒ‰[‚ğ•Ô‚·
+            // resourceã®æƒ…å ±ã‚’lookupãƒ†ãƒ¼ãƒ–ãƒ«ã«ä½œæˆã™ã‚‹ã€‚ä½œæˆã«ã€€å¤±æ•—ã—ãŸã‚‰ã€ã‚¨ãƒ©ãƒ¼ã§è¿”ã™ã€‚
+            // tyã‹ã‚‰ã€ä¿å­˜ã™ã‚‹ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’é¸æŠã™ã‚‹ã€‚
+            // ãã®ãƒ†ãƒ¼ãƒ–ãƒ«ã«å¯¾ã—ã¦ã€ãƒªã‚½ãƒ¼ã‚¹æƒ…å ±ã‚’ä½œæˆã™ã‚‹ã€‚ä½œæˆã«å¤±æ•—ã—ãŸã‚‰ã€lookupãƒ†ãƒ¼ãƒ–ãƒ«ã§ä½œæˆã—ãŸãƒªã‚½ãƒ¼ã‚¹ã‚’å‰Šé™¤ã—ãŸä¸Šã§ã€ã‚¨ãƒ©ãƒ¼ã‚’è¿”ã™
             console.log('headers(x-m2m-origin)=', request.headers['x-m2m-origin']);
             request.bodyObj.or = request.headers['x-m2m-origin'];
             var url = request.bodyObj.url;
 
-           // url‚ğ‰ğÍ('/'‚Å•ª‰ğj‚µ‚ÄAresource name‚ğæ“¾‚·‚éB 
+           // urlã‚’è§£æ('/'ã§åˆ†è§£ï¼‰ã—ã¦ã€resource nameã‚’å–å¾—ã™ã‚‹ã€‚ 
            var url_data = url.split('/');
            request.bodyObj.rn = url_data[url_data.length - 1];
            console.log('rn=', request.bodyObj.rn);
            console.log('request.ty = ',request.bodyObj.ty);
 
-           // ae(ty==2)‚Ìê‡‚ÍA“Á‚ÉAE‚É“Á‰»‚µ‚½ˆ—‚È‚µB
+           // ae(ty==2)ã®å ´åˆã¯ã€ç‰¹ã«AEã«ç‰¹åŒ–ã—ãŸå‡¦ç†ãªã—ã€‚
            if (request.bodyObj.ty == 3) { // cnt
                // get parent id  "kddi.jp/cse-id/cse-base/sensor_ae/humidity"-> pae = "kddi.jp/cse-id/cse-base/sensor_ae"
                console.log(request.bodyObj.rn.length);
-               request.bodyObj.pae = url.substr(0, url.length - (request.bodyObj.rn.length + 1)); // +1‚Í "/humidity"‚ÌÅ‰‚Ì"/"•ª
-           } else if (request.bodyObj.ty == 5) { // cse, À‚Íˆø”‚Écse-id‚ª“ü‚Á‚Ä‚­‚éH
+               request.bodyObj.pae = url.substr(0, url.length - (request.bodyObj.rn.length + 1)); // +1ã¯ "/humidity"ã®æœ€åˆã®"/"åˆ†
+           } else if (request.bodyObj.ty == 5) { // cse, å®Ÿã¯å¼•æ•°ã«cse-idãŒå…¥ã£ã¦ãã‚‹ï¼Ÿ
                // get csi "//kddi.jp/cse-id/cse-base" -> "/cse-id"
                request.bodyObj.csi = "/" + url_data[url_data.length - 2];
            }
@@ -1277,18 +1278,18 @@ app.post('/das/rce', function(request, response) {
 });
 
 // GET
-// (1) das/rce/_/(ƒŠƒ\[ƒX‚ÌURI)
-//  query parameterF@‚È‚µ
+// (1) das/rce/_/(ãƒªã‚½ãƒ¼ã‚¹ã®URI)
+//  query parameterï¼šã€€ãªã—
 //
-// i—ájGET : /das/rce/_/sensor
+// ï¼ˆä¾‹ï¼‰GET : /das/rce/_/sensor
 // retrieve resource[object Object]
 // get_resource_from_url (SyJqH4A0N): 1.785ms
-// app.get  { resource_uri: 'sensor' } (request.params‚ÉJSONŒ`®‚Åæ“¾‚³‚ê‚éj
+// app.get  { resource_uri: 'sensor' } (request.paramsã«JSONå½¢å¼ã§å–å¾—ã•ã‚Œã‚‹ï¼‰
 
-// ˆ—ŠT—vF
-// resource_uri‚ğƒL[‚ÉAlookupƒe[ƒuƒ‹‚ğŒŸõ‚·‚é
-// ˆê’v‚·‚é‚à‚Ì‚ª‚ ‚éê‡‚ÍA‚»‚ÌƒŒƒR[ƒh‚Ìty‚ğæ“¾‚·‚é
-// ty‚Ìí—Ş‚É‰‚¶‚ÄAcb/ae/cnt(/acp)‚Ìƒe[ƒuƒ‹‚ğ‘I‘ğ‚µAurl‚ªresource_uri‚Æˆê’v‚·‚éî•ñ‚ğƒŒƒXƒ|ƒ“ƒX‚Æ‚µ‚Ä•Ô‚·
+// å‡¦ç†æ¦‚è¦ï¼š
+// resource_uriã‚’ã‚­ãƒ¼ã«ã€lookupãƒ†ãƒ¼ãƒ–ãƒ«ã‚’æ¤œç´¢ã™ã‚‹
+// ä¸€è‡´ã™ã‚‹ã‚‚ã®ãŒã‚ã‚‹å ´åˆã¯ã€ãã®ãƒ¬ã‚³ãƒ¼ãƒ‰ã®tyã‚’å–å¾—ã™ã‚‹
+// tyã®ç¨®é¡ã«å¿œã˜ã¦ã€cb/ae/cnt(/acp)ã®ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’é¸æŠã—ã€urlãŒresource_uriã¨ä¸€è‡´ã™ã‚‹æƒ…å ±ã‚’ãƒ¬ã‚¹ãƒãƒ³ã‚¹ã¨ã—ã¦è¿”ã™
 
 app.get('/das/rce/_/:resource_uri', function(request, response) {
     console.log('app.get ', request.params);
@@ -1304,16 +1305,16 @@ app.get('/das/rce/_/:resource_uri', function(request, response) {
 
 // (2) /das/rcelist
 //
-// ‘Sƒpƒ‰ƒ[ƒ^‚ÍƒIƒvƒVƒ‡ƒ“I
-// ty			ƒŠƒ\[ƒXƒ^ƒCƒv	Š®‘Sˆê’v
-// class		AE‚ÌƒNƒ‰ƒX	Š®‘Sˆê’v
-// usr			ƒ†[ƒU‚hD	Š®‘Sˆê’v
-// name			•\¦–¼		Š®‘Sˆê’v
-// datatype		ƒf[ƒ^í•Ê	•”•ªˆê’viae, cnt)
-// type			AEƒ^ƒCƒv		Š®‘Sˆê’v
-// pae			eAE		Š®‘Sˆê’v
+// å…¨ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã¯ã‚ªãƒ—ã‚·ãƒ§ãƒ³ï¼
+// ty			ãƒªã‚½ãƒ¼ã‚¹ã‚¿ã‚¤ãƒ—	å®Œå…¨ä¸€è‡´
+// class		AEã®ã‚¯ãƒ©ã‚¹	å®Œå…¨ä¸€è‡´
+// usr			ãƒ¦ãƒ¼ã‚¶ï¼©D	å®Œå…¨ä¸€è‡´
+// name			è¡¨ç¤ºå		å®Œå…¨ä¸€è‡´
+// datatype		ãƒ‡ãƒ¼ã‚¿ç¨®åˆ¥	éƒ¨åˆ†ä¸€è‡´ï¼ˆae, cnt)
+// type			AEã‚¿ã‚¤ãƒ—		å®Œå…¨ä¸€è‡´
+// pae			è¦ªAE		å®Œå…¨ä¸€è‡´
 
-// o—Í
+// å‡ºåŠ›
 // {
 //   "rces": [
 //     {
@@ -1323,14 +1324,14 @@ app.get('/das/rce/_/:resource_uri', function(request, response) {
 //     },{
 //        "url": "//kddi.jp/cse-id/cse-base/sensor_ae/cnt1",
 //        "ty": 3,
-//        "sri": "cnt001dfrslfa"@@<--- ri(ae: ae-id, cse: cse-id, cnt:rn?)‚Ì’l‚ğİ’è‚·‚éH
+//        "sri": "cnt001dfrslfa"ã€€ã€€<--- ri(ae: ae-id, cse: cse-id, cnt:rn?)ã®å€¤ã‚’è¨­å®šã™ã‚‹ï¼Ÿ
 //     }
 //   ]
 // }
-// ‚ ‚é‚¢‚ÍAurl‚Ìˆê——‚ğ•Ô‚·‚©H
+// ã‚ã‚‹ã„ã¯ã€urlã®ä¸€è¦§ã‚’è¿”ã™ã‹ï¼Ÿ
 
 app.get('/das/rceList', function(request, response) {
-    console.log(request.query); /// ?ty=2&class=24 ‚È‚çA{ ty: '2', class: '24' }‚Æ‚È‚èAƒL[‚ğw’è‚µ‚Ä—v‘f‚ğæ“¾‰Â”\
+    console.log(request.query); /// ?ty=2&class=24 ãªã‚‰ã€{ ty: '2', class: '24' }ã¨ãªã‚Šã€ã‚­ãƒ¼ã‚’æŒ‡å®šã—ã¦è¦ç´ ã‚’å–å¾—å¯èƒ½
     var Object = request.query;
     db_sql.select_reclist(request, function(err, result) {
 	if(!err)
@@ -1341,10 +1342,10 @@ app.get('/das/rceList', function(request, response) {
 });
 
 // (3) /das/acp
-// trid, or‚Í•K{AŠ®‘Sˆê’v‚ğacpƒe[ƒuƒ‹‚©‚çŒŸõ
+// trid, orã¯å¿…é ˆã€å®Œå…¨ä¸€è‡´ã‚’acpãƒ†ãƒ¼ãƒ–ãƒ«ã‹ã‚‰æ¤œç´¢
 app.get('/das/acp', function(request, response) {
     console.log('app.get ', request.query);
-    // ƒpƒ‰ƒ[ƒ^ƒ`ƒFƒbƒN
+    // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒã‚§ãƒƒã‚¯
     keys = Object.keys(request.query);
     if (!keys || keys.length != 2 || !request.query['trid'] || !request.query['or']) {
         // parameter error
@@ -1352,13 +1353,13 @@ app.get('/das/acp', function(request, response) {
         responder.error_result(request, response, 500, 5000, 'Exception Error.');
         return 0;
     }
-    // ƒpƒ‰ƒ[ƒ^ƒ`ƒFƒbƒNOK‚È‚Ì‚ÅAACPæ“¾ˆ—
+    // ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ãƒã‚§ãƒƒã‚¯OKãªã®ã§ã€ACPå–å¾—å‡¦ç†
     db_sql.select_acp(request.query['trid'], request.query['or'], function(err, result) {
-        // trid/or‚Åw’è‚·‚éƒf[ƒ^‚ª‘¶İ‚µ‚È‚¢ê‡Aerr=null, result=[]‚ªsqlƒŒƒxƒ‹‚Å•Ô‚é
+        // trid/orã§æŒ‡å®šã™ã‚‹ãƒ‡ãƒ¼ã‚¿ãŒå­˜åœ¨ã—ãªã„å ´åˆã€err=null, result=[]ãŒsqlãƒ¬ãƒ™ãƒ«ã§è¿”ã‚‹
 	console.log(err);
 	console.log(result);
         if (!err) {
-            responder.response_result(request, response, 200, JSON.stringify(result[0]), 2000, ''); // return ACP info. result‚É‚Íacp‚ÌŒŸõŒ‹‰Ê‚ª“ü‚Á‚Ä‚­‚é
+            responder.response_result(request, response, 200, JSON.stringify(result[0]), 2000, ''); // return ACP info. resultã«ã¯acpã®æ¤œç´¢çµæœãŒå…¥ã£ã¦ãã‚‹
         } else {
 	    console.log('no data found');
             responder.error_result(request, response, 500, 5000, 'Exception Error.');
@@ -1367,13 +1368,13 @@ app.get('/das/acp', function(request, response) {
 });
 
 // (4) /das/acplist
-// trid, or,usr‚ÍƒIƒvƒVƒ‡ƒ“AƒIƒvƒVƒ‡ƒ“‚ª‘¶İ‚·‚éê‡‚ÍAŠ®‘Sˆê’v‚ğacpƒe[ƒuƒ‹‚©‚çŒŸõ
+// trid, or,usrã¯ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã€ã‚ªãƒ—ã‚·ãƒ§ãƒ³ãŒå­˜åœ¨ã™ã‚‹å ´åˆã¯ã€å®Œå…¨ä¸€è‡´ã‚’acpãƒ†ãƒ¼ãƒ–ãƒ«ã‹ã‚‰æ¤œç´¢
 app.get('/das/acpList', function(request, response) {
     console.log('app.get ', request.query.params);
     //        console.log(Object.keys(request.query));
     db_sql.select_acplist(request, function(rsc, result) {
         if(!rsc){
-            responder.response_result(request, response, 200, result, 2000, ''); // return ACP info. result‚É‚Íacp‚ÌŒŸõŒ‹‰Ê‚ª“ü‚Á‚Ä‚­‚é
+            responder.response_result(request, response, 200, result, 2000, ''); // return ACP info. resultã«ã¯acpã®æ¤œç´¢çµæœãŒå…¥ã£ã¦ãã‚‹
         }else{
 	    console.log('no data found');
             responder.error_result(request, response, 500, 5000, 'Exception Error.');
@@ -1382,16 +1383,16 @@ app.get('/das/acpList', function(request, response) {
 });
 
 // PUT
-// ƒŠƒ\[ƒX‚ÌXV
+// ãƒªã‚½ãƒ¼ã‚¹ã®æ›´æ–°
 
-// resource_uri‚ğƒL[‚ÉAlookupƒe[ƒuƒ‹‚ğŒŸõ‚·‚é
-// ˆê’v‚·‚é‚à‚Ì‚ª‚ ‚éê‡‚ÍA‚»‚ÌƒŒƒR[ƒh‚Ìty‚ğæ“¾‚·‚é
-// ty‚Ìí—Ş‚É‰‚¶‚ÄAcb/ae/cnt(/acp)‚Ìƒe[ƒuƒ‹‚ğ‘I‘ğ‚µAurl‚ªresource_uri‚Æˆê’v‚·‚éî•ñ‚ğXV‚µ‚ÄAXV‚µ‚½î•ñ‚ğƒŒƒXƒ|ƒ“ƒX‚Æ‚µ‚Ä•Ô‚·
+// resource_uriã‚’ã‚­ãƒ¼ã«ã€lookupãƒ†ãƒ¼ãƒ–ãƒ«ã‚’æ¤œç´¢ã™ã‚‹
+// ä¸€è‡´ã™ã‚‹ã‚‚ã®ãŒã‚ã‚‹å ´åˆã¯ã€ãã®ãƒ¬ã‚³ãƒ¼ãƒ‰ã®tyã‚’å–å¾—ã™ã‚‹
+// tyã®ç¨®é¡ã«å¿œã˜ã¦ã€cb/ae/cnt(/acp)ã®ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’é¸æŠã—ã€urlãŒresource_uriã¨ä¸€è‡´ã™ã‚‹æƒ…å ±ã‚’æ›´æ–°ã—ã¦ã€æ›´æ–°ã—ãŸæƒ…å ±ã‚’ãƒ¬ã‚¹ãƒãƒ³ã‚¹ã¨ã—ã¦è¿”ã™
 //
 
 app.put('/das/rce/_/:resource_uri', function(request, response) {
     console.log('app.put ', request.params);
-    console.log(request.params['resource_uri']); // JSON‚Ì—v‘f‚ğo—Í‚·‚é
+    console.log(request.params['resource_uri']); // JSONã®è¦ç´ ã‚’å‡ºåŠ›ã™ã‚‹
 
     get_body_json_data(request, function(err, body_Obj) {
         if (!err) {
@@ -1408,7 +1409,7 @@ app.put('/das/rce/_/:resource_uri', function(request, response) {
 		    body_Obj['dbg'] = 'Exception Error.';
 	            responder.error_result(request, response, 500, 5000, body_Obj['dbg']);
                 }
-            }); // callback‚ÅŒ‹‰Ê‚ğ•Ô‚·‚æ‚¤‚É•ÏX‚·‚é
+            }); // callbackã§çµæœã‚’è¿”ã™ã‚ˆã†ã«å¤‰æ›´ã™ã‚‹
         }else{
             console.log('body data is missing');
 	    body_Obj['dbg'] = 'Exception Error.';
@@ -1457,21 +1458,21 @@ app.put('/das/acp', function(request, response) {
 
 
 // DELETE resource
-// ˆ—ŠT—vF
-// resource_uri‚ğƒL[‚ÉAlookupƒe[ƒuƒ‹‚ğŒŸõ‚·‚é
-// ˆê’v‚·‚é‚à‚Ì‚ª‚ ‚éê‡‚ÍA‚»‚ÌƒŒƒR[ƒh‚Ìty‚ğæ“¾‚·‚é
-// ty‚Ìí—Ş‚É‰‚¶‚ÄAcb/ae/cnt(/acp)‚Ìƒe[ƒuƒ‹‚ğ‘I‘ğ‚µAurl‚ªresource_uri‚Æˆê’v‚·‚éî•ñ‚ğíœ‚µ‚ÄAíœ‚µ‚½î•ñ‚ğƒŒƒXƒ|ƒ“ƒX‚Æ‚µ‚Ä•Ô‚·
+// å‡¦ç†æ¦‚è¦ï¼š
+// resource_uriã‚’ã‚­ãƒ¼ã«ã€lookupãƒ†ãƒ¼ãƒ–ãƒ«ã‚’æ¤œç´¢ã™ã‚‹
+// ä¸€è‡´ã™ã‚‹ã‚‚ã®ãŒã‚ã‚‹å ´åˆã¯ã€ãã®ãƒ¬ã‚³ãƒ¼ãƒ‰ã®tyã‚’å–å¾—ã™ã‚‹
+// tyã®ç¨®é¡ã«å¿œã˜ã¦ã€cb/ae/cnt(/acp)ã®ãƒ†ãƒ¼ãƒ–ãƒ«ã‚’é¸æŠã—ã€urlãŒresource_uriã¨ä¸€è‡´ã™ã‚‹æƒ…å ±ã‚’å‰Šé™¤ã—ã¦ã€å‰Šé™¤ã—ãŸæƒ…å ±ã‚’ãƒ¬ã‚¹ãƒãƒ³ã‚¹ã¨ã—ã¦è¿”ã™
 
-// AE‚ÍˆÈ‰º‚Ì‚æ‚¤‚Èƒf[ƒ^‚ğAAPIãíœ‚É•ÔM‚·‚éƒf[ƒ^‚Æ‚µ‚Äì¬‚·‚é•K—v‚ª‚ ‚é
+// AEã¯ä»¥ä¸‹ã®ã‚ˆã†ãªãƒ‡ãƒ¼ã‚¿ã‚’ã€APIä¸Šå‰Šé™¤æ™‚ã«è¿”ä¿¡ã™ã‚‹ãƒ‡ãƒ¼ã‚¿ã¨ã—ã¦ä½œæˆã™ã‚‹å¿…è¦ãŒã‚ã‚‹
 /*
 AE
 {
-  "url": "//kddi.jp/cse-id/cse-base/sensor_ae",	<- lookup‚©‚ç
-  "ty": 2,					<- lookup‚©‚ç
-  "sri": "S20180417070045277BCV0",		<- lookup‚©‚ç
-  "class":0,					<- ˆÈ‰º‚ÍAae/cnt/cse‚È‚Ç‚©‚ç
+  "url": "//kddi.jp/cse-id/cse-base/sensor_ae",	<- lookupã‹ã‚‰
+  "ty": 2,					<- lookupã‹ã‚‰
+  "sri": "S20180417070045277BCV0",		<- lookupã‹ã‚‰
+  "class":0,					<- ä»¥ä¸‹ã¯ã€ae/cnt/cseãªã©ã‹ã‚‰
   "usr":"USR0001",
-  "name":"ƒZƒ“ƒT[",
+  "name":"ã‚»ãƒ³ã‚µãƒ¼",
   "datatypes":["DATA001","DATA002"],
   "type":125,
   "policy":[
@@ -1489,16 +1490,16 @@ AE
 
 CNT
 {
-  "url": "//kddi.jp/cse-id/cse-base/sensor_ae/tempareture",	<- lookup‚©‚ç
-  "ty": 3,					<- lookup‚©‚ç
-  "sri": "S20180417070045277BCV0",		<- lookup‚©‚ç
+  "url": "//kddi.jp/cse-id/cse-base/sensor_ae/tempareture",	<- lookupã‹ã‚‰
+  "ty": 3,					<- lookupã‹ã‚‰
+  "sri": "S20180417070045277BCV0",		<- lookupã‹ã‚‰
   "datatypes":["DATA001","DATA002"],
 }
 
 CBS
 {
   "url": "//kddi.jp/cse-id/cse-base",
-  "ty": 5,					<- lookup‚©‚ç
+  "ty": 5,					<- lookupã‹ã‚‰
   "sri": "cse-id"
 }
 */
@@ -1506,7 +1507,7 @@ CBS
 app.delete('/das/rce/_/:resource_uri', function (request, response) {
     console.log('app.delete resouce delete',request.params);
     request.url = request.params['resource_uri'];
-    console.log(request.params['resource_uri']);  // JSON‚Ì—v‘f‚ğo—Í‚·‚é
+    console.log(request.params['resource_uri']);  // JSONã®è¦ç´ ã‚’å‡ºåŠ›ã™ã‚‹
     resource.delete(request, response,function(err,result){
         if(!err){
             responder.response_result(request, response, 200, result, 2000, ''); 
@@ -1520,18 +1521,18 @@ app.delete('/das/acp', function (request, response) {
     console.log('app.delete acp delete ',request.params);
     console.log(request.headers);
     db_sql.select_acp(request.query['trid'], request.query['or'], function(err, result) {
-        // trid/or‚Åw’è‚·‚éƒf[ƒ^‚ª‘¶İ‚µ‚È‚¢ê‡Aerr=null, result=[]‚ªsqlƒŒƒxƒ‹‚Å•Ô‚é
+        // trid/orã§æŒ‡å®šã™ã‚‹ãƒ‡ãƒ¼ã‚¿ãŒå­˜åœ¨ã—ãªã„å ´åˆã€err=null, result=[]ãŒsqlãƒ¬ãƒ™ãƒ«ã§è¿”ã‚‹
 	console.log(err);
 	console.log(result);
         if (!err & result.length != 0) {
             db_sql.delete_acp(request.query.trid,request.query.or, function(err, result) {
                 if (!err) {
-                    // delete ‚µ‚½‚çAdelete‚µ‚½ACP‚Ìî•ñ‚ğ•Ô‚·B–‘O‚Éæ“¾‚µ‚Ä‚¨‚­•K—v‚ª‚ ‚é
+                    // delete ã—ãŸã‚‰ã€deleteã—ãŸACPã®æƒ…å ±ã‚’è¿”ã™ã€‚äº‹å‰ã«å–å¾—ã—ã¦ãŠãå¿…è¦ãŒã‚ã‚‹
                      body_Obj = result;
                      console.log(body_Obj);
                 }
             });
-            responder.response_result(request, response, 200, JSON.stringify(result[0]), 2000, ''); // return ACP info. result‚É‚Íacp‚ÌŒŸõŒ‹‰Ê‚ª“ü‚Á‚Ä‚­‚é
+            responder.response_result(request, response, 200, JSON.stringify(result[0]), 2000, ''); // return ACP info. resultã«ã¯acpã®æ¤œç´¢çµæœãŒå…¥ã£ã¦ãã‚‹
         } else {
 	    console.log('no data found');
             responder.error_result(request, response, 500, 5000, 'Exception Error.');
@@ -1539,11 +1540,11 @@ app.delete('/das/acp', function (request, response) {
     });
 });
 
-// @input parameters in body:
+// ã€€input parameters in body:
 //   Originator-id(or), userId(option), role-id(rlid), role-info(tkis,tkhd(Originator-id),tknd,tkna),access priviledge(option)
 //
 //   token claimset(payload):
-//   @tkvr,tkid,tkis,tkhd,tknb,tkna,tknm(option, token name),tkau(option, audience),tkps(option, permission),tkex(option)
+//   ã€€tkvr,tkid,tkis,tkhd,tknb,tkna,tknm(option, token name),tkau(option, audience),tkps(option, permission),tkex(option)
 //    what to set in tkvr is not described.
 //    tkid should be created by DAS
 //    tkis should be the address (id) of DAS
@@ -1610,7 +1611,7 @@ app.get('/das/token', function (request, response) {
     });
 });
 
-// Originator-id‚©‚çTokenˆê——‚ğæ“¾‚·‚é
+// Originator-idã‹ã‚‰Tokenä¸€è¦§ã‚’å–å¾—ã™ã‚‹
 app.get('/das/tokenlist', function (request, response) {
     console.log('app.get token list\n');
     get_body_json_data(request, function(err, body_Obj) {

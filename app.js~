@@ -682,7 +682,7 @@ function send_back_empty_content(request, response){
 
 app.post('/das/dynaAuth', function (request, response) {
     console.log('app.post dynamicacpinfo\n',request.params);
-    console.log('headers = ',request.headers);
+    console.log(request.headers);
     get_body_json_data(request, function(err, body_Obj) {
         if (!err) {
             if(isValidJson(JSON.stringify(body_Obj))){
@@ -891,43 +891,27 @@ app.post('/das/dynaAuth', function (request, response) {
 	console.log('Check the validity of received request');
         // header (X-M2M-RIや、Notifyで返信する必要がある。POST）
 
-	// Phase3
+	// Phase2 (2020/1/22)
 	// Step 1.Check if token-id exits in the received parameters.
 	// 	Yes: goto indirect DAS flow
 	//		Get token info related to token-id
 	//		if the indirect flow failed, go to next step.
 	//	No: goto Role-ID flow
+	/*
 	if( !isEmptyObject(tids)) {
 	    try {
 		console.log('Retreive tokens from token-ids');
-		db_sql.select_tokens_from_tokenids(tids,function(err,result){
-		    if(err){
-			console.log("no matched token data found for tokenids about " + tids);
-			responder.error_result(request, response, 500, 5000, 'No token data found in DB.');
-                	return 0;
-                    }else{
-			console.log('result2 =',result);
-   		        result_object = JSON.parse(JSON.stringify(result[0]));
-                        console.log('result_object = ', result_object);
-			dres ={};
-			dres['tkns'] = result_object;
-			seci= {};
-			seci['sit'] = 2;	// Dynamic Authorization Response (dres)
-			seci['dres'] = dres;
-			console.log('seci = ',JSON.stringify(seci));
-			final_response = {};
-			final_response['m2m:seci']=seci;
-			responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
-		    }
-	    	});
-		
+		var tokens = token.retrieve_token_from_tokenid(tids); // need token table and role assign function
+		send_tokens(tokens);  // send back tokens using dynaAuthDasResponse
 	    } catch(e) {
 		console.log('Token could not be retreived from given token-id');
 		responder.error_result(request, response, 500, 5000, 'No token data found in DB.');
                 return 0;
 	    }
 	}
+	*/
 
+	/*
 	if(!isEmptyObject(orid) || !isEmptyObject(rfa)) {  //if any Role-IDs received
         // Phase 2.Check if Role-IDs (orid and rfa) exits in the received parameters.
 	// 	Yes: goto DAS role-ID flow
@@ -945,22 +929,21 @@ app.post('/das/dynaAuth', function (request, response) {
 		console.log('filtered_roleids = ',filtered_roleids );
 		// get acp info from roleids (and originator) from acp table
 
-		db_sql.select_acps_from_roleids(filtered_roleids,function(err,result){
-		    if(isEmptyObject(result)){
+//		db_sql.select_acps_from_roleids(filtered_roleids,function(err,result){
+		db_sql.select_acp_from_roleid(filtered_roleids[0],function(err,result){
+		    //	            if(isEmptyObject(result)){
+		    if(err){
 			console.log("no matched ACP data found for roleids about " + filtered_roleids);
 			responder.error_result(request, response, 500, 5000, 'No ACP data found in DB.');
                 	return 0;
                     }else{
-			// send back correct ACP info list
+			// send back ACP info
 			console.log('result2 =',result);
-   		        result_objects = JSON.parse(JSON.stringify(result[0]));
-			for (result_object in result_objects){
-			    acop = result_object['op'];
-			    policy_data = result_object['policy'];  // Add acop
-			}
-                        console.log('result_object = ', result_objects);
-//			console.log('policy_data=', policy_data);
-//			console.log('rlid =', result_object['rlid']);
+   		        result_object = JSON.parse(JSON.stringify(result[0]));
+                        policy_data = result_object['policy'];
+                        console.log('result_object = ', result_object);
+			console.log('policy_data=', policy_data);
+			console.log('rlid =', result_object['rlid']);
 		    }
 	    	});
 	    } catch(e){
@@ -969,6 +952,7 @@ app.post('/das/dynaAuth', function (request, response) {
                 return 0;
 	    }	
 	}
+*/
 
         // Step 3.Check if access control parameters exis in the received parameters.
 	//	Yes: goto DAS access control parameters flow (implemented in Phase1)
@@ -1103,8 +1087,7 @@ app.post('/das/dynaAuth', function (request, response) {
 		}else if ('ppl' in response_info)
 		    ppl_val = response_info['ppl'];
 		else 
-		//		    ppl_val = 3600000; // default(milli-sec) could be in 20141003T112032 (absolute time),or 3600000 (relative time)
-		    ppl_val =  moment().add(1,'h').format('YYYYMMDDTHHmmss');
+		    ppl_val = 3600000; // default(milli-sec) could be in 20141003T112032 (absolute time),or 3600000 (relative time)
 		// in case absolute time
 		// 
 
@@ -1116,20 +1099,35 @@ app.post('/das/dynaAuth', function (request, response) {
 		response.setHeader('x-m2m-ri', request.headers['x-m2m-ri']);
 		response.setHeader('x-m2m-rsc', 2000);
 		response.status(200);
+		
 		console.log('response.headers =', response.headers);
 		
+		// Response Status Code 
+//		response_hash = {};
+//		response_hash['rsc'] = 2000;
+
+		// X-M2M-RI header
+//		response_hash['rqi'] = response_info['rqi'];
+
+		// content (pc)
+		// dai or token[s]!
+		// dynamicACPInfo
 		dai = {};
 		dai['gp'] = [policy_data];
 		dai['pl'] = ppl_val;
 		console.log('dai = ',dai);
 
+		// tokenとdaiは両方含まれるケースはある。
 		dres ={};
 		dres['dai'] = dai;
 		console.log('dres = ',dres);
 
-		//　Add list of tokens. ESData shoule be applied to Each token.
+		
+//		Add list of tokens. ESData shoule be applied to Each token.
+		//		tokens =token.createTokenFromACP(dai,response_info['or'],response_info['trid'],'JWE');
 		token.createTokenFromACP(dai,response_info['or'],response_info['trid'],'JWE',function(err,result){
-		console.log('token =', result);
+		    console.log('token =', result);
+//		console.log('tokens = ', tokens);
 		dres['tkns'] = [result];
 		
 		seci= {};
@@ -1137,7 +1135,13 @@ app.post('/das/dynaAuth', function (request, response) {
                 seci['dres'] = dres;
                 console.log('seci = ',JSON.stringify(seci));
 
+		pc = {};
+        	pc['seci'] = seci;
+		console.log('pc = ',pc);
+//                response_hash['pc'] = pc;
+
                 final_response = {};
+		//final_response['m2m.rsp'] = response_hash;
                 final_response['m2m:seci']=seci;
                 //  Send back Notify(dynaAuthDasResponse)
 		    responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
@@ -1555,13 +1559,12 @@ app.delete('/das/acp', function (request, response) {
 //
 //    and when sending/receiving the token data, the format should be converted to oneM2M JWT claim set and ESData protected
 //    generated token should be stored in the token repository
-//    And when new token for role is created, the access priviledged info received from role issuer should be used to create
+//    And when new token for role is created, the access proviledged info received from role issuer should be used to create
 //    a new ACP record in ACP table and the target resource of the ACP should be also created in resource table.
 //    The sequence should be:
-//        1. Servicer ask to regist AE/cnt/cin info for target resource (if not exsists) record in dasdb
-//        2. Then create ACP info in dasdb related with the registered target resource and also store role-id (proper resource table)
-//        3. Then create token info related to this role-ids in dasdb (token table)
-
+//        1. create target resource (if not exsists) record in dasdb
+//        2. create ACP info in dasdb (proper resource table)
+//        3. create token info in dasdb (token table)
 app.post('/das/token', function (request, response) {
     console.log('app.post token create\n');
     get_body_json_data(request, function(err, body_Obj) {
