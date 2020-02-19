@@ -27,6 +27,7 @@ function generate_asymmetric_key(){
 // if role-ids received from CSE (dynaAuthDasRequest), DAS shoule get all the role-ids related to the Originator (AE) and get the AND of the role-ids, then send back the token with new role-ids list to CSE 
 
 // Create token using role info received from role issuer (Create token API could be used)
+
 function create_token_for_roleid(originatorID, targetResourceidID, roleID, accessControlInfo){
     // input parameter should be role-ids
     // get ACP info related to all role-ids
@@ -101,24 +102,24 @@ function get_timestr_from_now(add_second = 0){
 }
 
 // Created token should be stored in the token table
-exports.createTokenFromACP = function(acp, originator_id, target_id, token_type='JWT',callback){
+exports.createTokenFromACP = function(acrs, originator_id, target_ids, token_type='JWT',callback){
     
     tkvr = '1.0'; // fixed value
     tkid = create_token_id();
     tkis = usespid + '/' + usecsebase + '/' + usedasaeid; //example.net/myCSE/-/exampleDAS'; // das-ae id (read from das-ae setup file)
     tkhd = originator_id;// Originator id
     tknb = get_timestr_from_now(0);
-    //    tkna = get_timestr_from_now(acp['pl']);  // +dai['pl'] 3600 sec
     tkna = get_timestr_from_now(3600);
-    tknm = 'access token for '+ target_id+ ' from '+ originator_id;
-    tkau = [usespid + usecseid]; // list of CSEID absolute (HCSE)
+    tknm = 'access token for ' +  originator_id;
+    tkau = [usespid + usecseid]; // list of CSEID absolute (HCSE) - current CSE info
     tkps = {
         'pm': [{
-            'ris': [target_id],
-            'pv': [delete acp['pl']]
+            'ris': target_ids,
+            'pv': acrs
 	    // ,'rids': []
         }]
     };
+    console.log('tkps =', JSON.stringify(tkps));
     tkex = 'This is a token claimset created by DAS';
     onem2m_claimset = {tkvr,
 		tkid,

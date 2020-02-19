@@ -457,7 +457,7 @@ exports.select_acp = function(trid, or, callback) {
 
 // get all acps related to all roleids
 // and include all of them into 
-exports.select_acps_from_roleids = async function(roleids, callback) {
+exports.select_acps_from_roleids = function(roleids, callback) {
     console.log('select_acps_from_roleids');
     sq_flg = "'";
     roleids_str ="";

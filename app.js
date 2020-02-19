@@ -336,8 +336,13 @@ function get_body_json_data(request, callback){
             callback(1,'body is empty');
             return '0';
         }
-        body_Obj = JSON.parse(fullBody.toString());
-        callback(0,body_Obj);
+	try {
+          body_Obj = JSON.parse(fullBody.toString());
+            callback(0,body_Obj);
+	}
+        catch (e) {
+          callback(1, '[parse_to_json] do not parse json body');
+        }
     });
 }
 
@@ -683,6 +688,7 @@ function send_back_empty_content(request, response){
 app.post('/das/dynaAuth', function (request, response) {
     console.log('app.post dynamicacpinfo\n',request.params);
     console.log('headers = ',request.headers);
+
     get_body_json_data(request, function(err, body_Obj) {
         if (!err) {
             if(isValidJson(JSON.stringify(body_Obj))){
@@ -694,54 +700,7 @@ app.post('/das/dynaAuth', function (request, response) {
                 responder.error_result(request, response, 400, 4102, error);
                 return 0;
             }
-
-/*	    Miss interpreter of the spec. The following should be deleted.
-	    body_data = body_Obj['m2m:rqp'];
-            error="";
-            mandatory_keys = ['op', 'to', 'fr' ,'rqi' ,'pc'];
-            var keys = Object.keys(body_data);
-
-            for (var mandatory_key of mandatory_keys){
-		if(!keys.includes(mandatory_key)){
-   	            error = "NG:Mandatory parameters NOT matched!";
-                    responder.error_result(request, response, 400, 6023, error);
-                    return 0;
-                }
-            }
-            response_info = {};
-            trt = 0;
-
-    	    for (key in body_data) {
-		if(key == 'op' && body_data[key] != 5){
-	           error = "NG:operation of the request is not NOTIFY.";
-                   responder.error_result(request, response, 500, 5000, error);
-                   return 0;
-               }
-
-               if((key == 'to' || key == 'fr' || key == 'rqi') && !body_data[key]){
-	           error = "NG:Parameter " + key + " of the request is empty.";
-                   responder.error_result(request, response, 400, 6023, error);
-                   return 0;
-               }else {
-                   if(key == 'rqi')
-		       response_info[key] = body_data[key];
-               }
-
-               if(key == 'pc'){
-                   pc_data = body_data[key];
-                   if(!pc_data){
-			error = "NG:Parameter " + key + " of the request is empty.";
-                        responder.error_result(request, response, 500, 5000, error);
-                        return 0;
-                   }
-                   seci_data = pc_data['seci'];
-                   seci_mandatory_keys = ['sit', 'dreq'];
-	           var seci_keys = Object.keys(seci_data);
-	           if( seci_mandatory_keys.sort().toString() != seci_keys.sort().toString()){
-                       responder.error_result(request, response, 500, 5000, 'NG:mandatory security parameters NOT matched!');
-                       return 0;
-                   }
-*/
+	    
             response_info = {};
 
 	    seci_data = body_Obj['m2m:seci'];
@@ -770,6 +729,10 @@ app.post('/das/dynaAuth', function (request, response) {
                 	       }
                            }
 
+			   tids = [];
+			   orid = [];
+			   rfa = [];
+			   
                            for( dreq_key in dreq_data ) {
 			       // originator	m2m:ID
 		               if(dreq_key == 'or'){
@@ -859,6 +822,7 @@ app.post('/das/dynaAuth', function (request, response) {
                                    }
                                }
 			       // tids(token-id list) will be supported in phase3.	tokenIDs	List of m2m:tokenID
+
                                if(dreq_key == 'tids'){
 				   console.log('token-id list will be implemented in Phase3');
 			           if( dreq_data[dreq_key]){
@@ -881,7 +845,7 @@ app.post('/das/dynaAuth', function (request, response) {
            }  // end of for in body_data
 */
        }else{
-            console.log('body data is missing');
+            console.log('body data is missing or has invalid JSON format');
 	    body_Obj['dbg'] = 'Exception Error.';
             responder.error_result(request, response, 500, 5000, body_Obj['dbg']);
             return 0;
@@ -898,19 +862,24 @@ app.post('/das/dynaAuth', function (request, response) {
 	//		if the indirect flow failed, go to next step.
 	//	No: goto Role-ID flow
 	if( !isEmptyObject(tids)) {
+	    console.log('token id received');
 	    try {
 		console.log('Retreive tokens from token-ids');
 		db_sql.select_tokens_from_tokenids(tids,function(err,result){
-		    if(err){
+		    if(err || isEmptyObject(result)){
 			console.log("no matched token data found for tokenids about " + tids);
 			responder.error_result(request, response, 500, 5000, 'No token data found in DB.');
                 	return 0;
                     }else{
 			console.log('result2 =',result);
-   		        result_object = JSON.parse(JSON.stringify(result[0]));
-                        console.log('result_object = ', result_object);
+   		        result_objects = JSON.parse(JSON.stringify(result));
+                        console.log('result_object = ', result_objects);
+			tokens = [];
+			for (tokenObj of result_objects){
+			    tokens.push(tokenObj['tkob']);
+			}
 			dres ={};
-			dres['tkns'] = result_object;
+			dres['tkns'] = tokens;
 			seci= {};
 			seci['sit'] = 2;	// Dynamic Authorization Response (dres)
 			seci['dres'] = dres;
@@ -918,6 +887,7 @@ app.post('/das/dynaAuth', function (request, response) {
 			final_response = {};
 			final_response['m2m:seci']=seci;
 			responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
+			return 0;
 		    }
 	    	});
 		
@@ -927,13 +897,12 @@ app.post('/das/dynaAuth', function (request, response) {
                 return 0;
 	    }
 	}
-
-	if(!isEmptyObject(orid) || !isEmptyObject(rfa)) {  //if any Role-IDs received
+	else if(!isEmptyObject(orid) || !isEmptyObject(rfa)) {  //if any Role-IDs received
         // Phase 2.Check if Role-IDs (orid and rfa) exits in the received parameters.
 	// 	Yes: goto DAS role-ID flow
 	//		if the role-ID flow failed, go to next step.
 	    //	No: goto control parameter flow
-
+	    console.log('role id received');
 	    try {
 		console.log('Retrieve ACP info from role-ids');
 		var req_roleids = orid.concat(rfa);
@@ -953,14 +922,36 @@ app.post('/das/dynaAuth', function (request, response) {
                     }else{
 			// send back correct ACP info list
 			console.log('result2 =',result);
-   		        result_objects = JSON.parse(JSON.stringify(result[0]));
-			for (result_object in result_objects){
-			    acop = result_object['op'];
-			    policy_data = result_object['policy'];  // Add acop
+   		        result_objects = JSON.parse(JSON.stringify(result));
+			//			console.log('result_objects = ', result_objects);
+			policy_datas = [];
+			trids = [];
+			for (result_object of result_objects){
+			    trid = result_object['trid'];
+			    policy_data = JSON.parse(result_object['policy']);  // Add acor
+			    delete policy_data['pl'];
+			    policy_data['acor'] = [result_object['or']];
+			    trids.push(trid);
+                            policy_datas.push(policy_data);
 			}
-                        console.log('result_object = ', result_objects);
-//			console.log('policy_data=', policy_data);
-//			console.log('rlid =', result_object['rlid']);
+			console.log('trids=', trids);
+			console.log('policy_datas=', policy_datas);
+			// create dai or tokens
+			//			console.log('rlid =', result_object['rlid']);
+			token.createTokenFromACP(policy_datas,response_info['or'],trids,'JWE',function(err,result){
+			    dres= {};
+ 			    console.log('token =', result);
+			    dres['tkns'] = [result];
+			    seci= {};
+			    seci['sit'] = 2;	// Dynamic Authorization Response (dres)
+			    seci['dres'] = dres;
+			    console.log('seci = ',JSON.stringify(seci));
+			    final_response = {};
+			    final_response['m2m:seci']=seci;
+			    //  Send back Notify(dynaAuthDasResponse)
+			    responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
+			    return 0;
+			});
 		    }
 	    	});
 	    } catch(e){
@@ -970,7 +961,9 @@ app.post('/das/dynaAuth', function (request, response) {
 	    }	
 	}
 
-        // Step 3.Check if access control parameters exis in the received parameters.
+	/**/
+	else {
+        // Step 3.Check if access control parameters exists in the received parameters.
 	//	Yes: goto DAS access control parameters flow (implemented in Phase1)
 	//	No: Send back dynaAuthDASResponse with empty content in sit
         // When any one of the above steps(1-3) is succeeded, DAS sends back the dynaAuthDASResponse to HCSE.
@@ -1128,7 +1121,7 @@ app.post('/das/dynaAuth', function (request, response) {
 		console.log('dres = ',dres);
 
 		//Å@Add list of tokens. ESData shoule be applied to Each token.
-		token.createTokenFromACP(dai,response_info['or'],response_info['trid'],'JWE',function(err,result){
+		token.createTokenFromACP([policy_data],response_info['or'],[response_info['trid']],'JWE',function(err,result){
 		console.log('token =', result);
 		dres['tkns'] = [result];
 		
@@ -1144,6 +1137,8 @@ app.post('/das/dynaAuth', function (request, response) {
 		});
 	    }
 	});
+	}
+/**/
     });
 });
 
