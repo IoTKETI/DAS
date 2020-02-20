@@ -457,7 +457,7 @@ exports.select_acp = function(trid, or, callback) {
 
 // get all acps related to all roleids
 // and include all of them into 
-exports.select_acps_from_roleids = async function(roleids, callback) {
+exports.select_acps_from_roleids = function(roleids, callback) {
     console.log('select_acps_from_roleids');
     sq_flg = "'";
     roleids_str ="";
@@ -995,12 +995,16 @@ exports.delete_token = function(obj, callback) {
 exports.select_tokens_from_tokenids = function(tokenids, callback) {
     console.log('select_tokens_from_tokenid');
 
+    sq_flg = "'";
+//    comma = ",";
     tokenids_str ="";
     for (tokenid of tokenids){
 	if(tokenids_str.length == 0)
-            tokenids_str = "where tkid in ('" + tokenid + "'";
+//            tokenids_str = "where tkid in ('" + tokenid + "'";
+            tokenids_str = "where tkid in (" +sq_flg + tokenid + sq_flg;
 	else
-	    tokenids_str = tokenids_str + "," + "'"+ tokenid+"'";
+	    //	    tokenids_str = tokenids_str + "," + "'"+ tokenid+"'";
+	    tokenids_str = tokenids_str + "," + sq_flg + tokenid + sq_flg;
     }
 
     tokenids_str = tokenids_str + ")";

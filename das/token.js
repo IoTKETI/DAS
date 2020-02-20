@@ -4,8 +4,8 @@ var responder = require('./responder');
 var resource = require('./resource');
 var db = require('./db_action');
 var db_sql = require('./sql_action');
-var jose = require('jose');
 const shortid = require('shortid');
+const fs = require('fs');
 
 // Asymmetric/Symmetric keys should be generated and stored in the keyfiles/key table.
 // Asymmetric: Public key of CSE(ID)ublic+private keys of DAS
@@ -31,9 +31,10 @@ function generate_asymmetric_key(){
 function create_token_for_roleid(originatorID, targetResourceidID, roleID, accessControlInfo){
     // input parameter should be role-ids
     // get ACP info related to all role-ids
+    // Simple call ACP info create request
     create_acpinfo_in_acptable(originatorID, targetResourceidID, roleID, accessControlInfo); // usr info= null, originatorID and roleID should be set in the acp info table. accessControlInfo should at least include ocop.
     tokenid = create_token_from_acpinfo(originatorID, targetResourceidID, roleID, accessControlInfo);
-    send_back_tokeninfo(tokenid);
+    // Return tokenObject including tokenids
 }
 // Can be use Retrieve token API
 // Retreive tokenObjects/tokenids related to certain role-ids
@@ -378,12 +379,13 @@ function sample_JWE(){
 // for JWS, use self private key to sign
 // use JWE, use private key to encode
 function encode_token(token_type = 'JWT', header, payload, key){
-    console.log('type of payload data =', typeof(payload));
+//    console.log('type of payload data =', typeof(payload));
     console.log('header = ', JSON.stringify(header));
     console.log('payload = ',JSON.stringify(payload));
     console.log('key = ', JSON.stringify(key));
-    console.log('supported algo num =', key.algorithms().size);
-    console.log('supported algo =', key.algorithms());
+    console.log('key val = ', key.k);
+//    console.log('supported algo num =', key.algorithms().size);
+//    console.log('supported algo =', key.algorithms());
     
     if(token_type == 'JWT'){
 	token = jose.JWT.sign(payload, jose.JWK.None);
@@ -391,6 +393,10 @@ function encode_token(token_type = 'JWT', header, payload, key){
 	token = jose.JWS.sign(payload, key, header);
     }else if( token_type == 'JWE'){
 	token = jose.JWE.encrypt(JSON.stringify(payload),key, header);
+	console.log('encrypted token =', token);
+	console.log('decrypted token =', jose.JWE.decrypt(token,key,{ complete: true }));
+        tkn =  jose.JWE.decrypt(token,key,{ complete: true });
+	console.log('decoded payload =',tkn['cleartext'].toString())
     }
     return token;
 }
@@ -478,7 +484,23 @@ function send_tokens_with_roleids(filtered_roleids){
 // Key type. Must be 'RSA', 'EC', OKP' or 'oct'.
 // the key file should be pre-stored in the key file and  
 //function get_key(token_type = 'JWE', key_type = 'RSA', key_size = 2048,is_private = true){
-function get_key(token_type = 'JWE', key_type = 'oct', key_size = 256, is_private = false){
+
+
+// How to import key (symmetric key) from file
+// 
+// {
+//	"k": "lxgTP1LqzZ0XFhlrA5KhBmwEkUW8W1bqXmXxqAAUCas",
+//	"kty": "oct",
+//	"kid": "98qkBe6QbHHQiVo6h2g40QTJNuokT97C81T9qJvcmI8"
+//}
+//
+// const { readFileSync } = require('fs')
+// x= readFileSync('C:/Users/h-kato/key_file.txt')
+// x1=x.toString()
+// x2=JSON.parse(x1)
+// key = jose.JWK.asKey(x2)
+
+function get_key2(token_type = 'JWE', key_type = 'oct', key_size = 256, is_private = false){
     usage = {};
     if(token_type == 'JWS'|| token_type == 'JWT'){ //sign with my private key
 	usage = 'sig';
@@ -504,11 +526,19 @@ function get_key(token_type = 'JWE', key_type = 'oct', key_size = 256, is_privat
         }
     }else{
 	console.log('secret key = ', JSON.stringify(gen_key.toJWK(false)));
+	console.log('secret key value (k) =', gen_key.k);
 	key = gen_key;
     }
     return key;
 }
 
+function get_key(token_type = 'JWE', key_type = 'oct', key_size = 256, is_private = false){
+    
+    x= fs.readFileSync('C:/Users/h-kato/key_file.txt')
+    x1=x.toString()
+    x2=JSON.parse(x1)
+    return key = jose.JWK.asKey(x2)
+}
 // > jose.JWK
 //{
 //  asKey: [Function: asKey],

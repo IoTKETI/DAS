@@ -330,17 +330,18 @@ function get_body_json_data(request, callback){
     request.on('data', function (chunk) {
         fullBody += chunk.toString();
     });
-    console.log(fullBody);
+    console.log('fullbody=',fullBody);
     request.on('end', function () {
-        if (fullBody == "") {
-            callback(1,'body is empty');
-            return '0';
-        }
+//        if (fullBody == "") {
+//            callback(1,'body is empty');
+//            return '0';
+//        }
 	try {
           body_Obj = JSON.parse(fullBody.toString());
             callback(0,body_Obj);
 	}
         catch (e) {
+	    console.log(e);
           callback(1, '[parse_to_json] do not parse json body');
         }
     });
@@ -1554,17 +1555,79 @@ app.delete('/das/acp', function (request, response) {
 //    a new ACP record in ACP table and the target resource of the ACP should be also created in resource table.
 //    The sequence should be:
 //        1. Servicer ask to regist AE/cnt/cin info for target resource (if not exsists) record in dasdb
-//        2. Then create ACP info in dasdb related with the registered target resource and also store role-id (proper resource table)
+//        2. Then create ACP info in dasdb related with the registered target resource and also store role-id (in proper resource table)
 //        3. Then create token info related to this role-ids in dasdb (token table)
 
+// Input:
+//   Originator id(M), Resource target id(O), Roleids (M)
+// Output:
+//   token with trids and granted priviledged infos
+// Process:
+//   Search ACP table with or(m)/rlid(m)
 app.post('/das/token', function (request, response) {
     console.log('app.post token create\n');
+    
     get_body_json_data(request, function(err, body_Obj) {
+	    console.log(typeof(body_Obj));
+        console.log('body data =',body_Obj);
+	
 	if (!err) {
-            console.log(body_Obj);
+	    or = body_Obj['or'];
+	    console.log('originator =', or);
+	    roleids = body_Obj['rlids'];
+	    console.log('roleids =',roleids);
 	    
-	    onem2m_token = create_onem2m_token();
-	    console.log(onem2m_token);
+	    try {
+	        db_sql.select_acps_from_roleids(roleids,function(err,result){
+		    if(isEmptyObject(result)){
+			console.log("no matched ACP data found for roleids about " + filtered_roleids);
+			responder.error_result(request, response, 500, 5000, 'No ACP data found in DB.');
+                	return 0;
+                    }else{
+			// send back correct ACP info list
+			console.log('result2 =',result);
+   		        result_objects = JSON.parse(JSON.stringify(result));
+			//			console.log('result_objects = ', result_objects);
+			policy_datas = [];
+			trids = [];
+			for (result_object of result_objects){
+			    trid = result_object['trid'];
+			    policy_data = JSON.parse(result_object['policy']);  // Add acor
+			    delete policy_data['pl'];
+			    policy_data['acor'] = [result_object['or']];
+			    trids.push(trid);
+                            policy_datas.push(policy_data);
+			}
+			console.log('trids=', trids);
+			console.log('policy_datas=', policy_datas);
+			// create dai or tokens
+			//			console.log('rlid =', result_object['rlid']);
+			token.createTokenFromACP(policy_datas,or,trids,'JWE',function(err,result){
+			    dres= {};
+ 			    console.log('token =', result);
+			    dres['tkns'] = [result];
+			    seci= {};
+			    seci['sit'] = 2;	// Dynamic Authorization Response (dres)
+			    seci['dres'] = dres;
+			    console.log('seci = ',JSON.stringify(seci));
+			    final_response = {};
+			    final_response['m2m:seci']=seci;
+			    //  Send back Notify(dynaAuthDasResponse)
+			    responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
+			    return 0;
+			});
+		    }
+	    	});
+	    } catch(e){
+		console.log('Role info could not be retreived from given role-id');
+		responder.error_result(request, response, 500, 5000, 'No role info data found in DB.');
+                return 0;
+	    }
+//	    onem2m_token = create_onem2m_token();
+//	    console.log(onem2m_token);
+	}else{
+	    // sendback error
+	    console.log('invalid json');
 	}
     });
 });
