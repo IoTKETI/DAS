@@ -324,6 +324,25 @@ function isValidJson(value) {
   return true
 }
 
+
+function get_body_json_data2(request){
+    return new Promise(function(resolve,reject ) {
+    var fullBody = '';
+    request.on('data', function (chunk) {
+        fullBody += chunk.toString();
+    }).on('end', function () {
+	try {
+	console.log('fullbody=',fullBody);
+        var body_Obj = JSON.parse(fullBody.toString());
+	console.log('body=',body_Obj);
+            resolve(body_Obj);
+	}catch(e){
+//	    console.log(e)
+	    reject(e);
+	}
+    });
+    });
+}
 function get_body_json_data(request, callback){
 
     var fullBody = '';
@@ -337,12 +356,12 @@ function get_body_json_data(request, callback){
 //            return '0';
 //        }
 	try {
-          body_Obj = JSON.parse(fullBody.toString());
+            body_Obj = JSON.parse(fullBody.toString());
             callback(0,body_Obj);
 	}
         catch (e) {
 	    console.log(e);
-          callback(1, '[parse_to_json] do not parse json body');
+            callback(1, '[parse_to_json] do not parse json body');
         }
     });
 }
@@ -686,10 +705,18 @@ function send_back_empty_content(request, response){
     responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
 }
 
-app.post('/das/dynaAuth', function (request, response) {
-    console.log('app.post dynamicacpinfo\n',request.params);
+app.post('/das/dynaAuth', async function (request, response) {
+    console.log('app.post dynaAuthDasRequest\n',request.params);
     console.log('headers = ',request.headers);
-
+    /*
+    var body_Obj = await get_body_json_data2(request).then(function(value){console.log('object =', value)}).catch((err) => {
+        responder.error_result(request, response, 400, 4102, err);
+	console.log(err);
+	return 0;
+    });
+    console.log(body_Obj);
+    var err = 0;
+*/
     get_body_json_data(request, function(err, body_Obj) {
         if (!err) {
             if(isValidJson(JSON.stringify(body_Obj))){
@@ -1140,7 +1167,7 @@ app.post('/das/dynaAuth', function (request, response) {
 	});
 	}
 /**/
-    });
+    });  // end of  get_body_json_data()
 });
 
 

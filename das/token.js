@@ -534,7 +534,8 @@ function get_key2(token_type = 'JWE', key_type = 'oct', key_size = 256, is_priva
 
 function get_key(token_type = 'JWE', key_type = 'oct', key_size = 256, is_private = false){
     
-    x= fs.readFileSync('C:/Users/h-kato/key_file.txt')
+//    x= fs.readFileSync('C:/Users/h-kato/key_file.txt')
+    x= fs.readFileSync('key_file.txt')
     x1=x.toString()
     x2=JSON.parse(x1)
     return key = jose.JWK.asKey(x2)
