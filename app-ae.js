@@ -19,24 +19,24 @@ if (process.env.NODE_ENV == 'production') {
 }
 var fs = require('fs');
 var http = require('http');
-var querystring = require("querystring");
-var StringDecoder = require('string_decoder').StringDecoder;
-var decoder = new StringDecoder('utf8');
+//var querystring = require("querystring");
+//var StringDecoder = require('string_decoder').StringDecoder;
+//var decoder = new StringDecoder('utf8');
 var express = require('express');
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
-var util = require('util');
+//var util = require('util');
 var url = require('url');
 var ip = require('ip');
-var crypto = require('crypto');
+//var crypto = require('crypto');
 var fileStreamRotator = require('file-stream-rotator');
-var merge = require('merge');
+//var merge = require('merge');
 var https = require('https');
-var moment = require('moment');
+//var moment = require('moment');
 var responder = require('./das/responder');
 var resource = require('./das/resource');
-var db = require('./das/db_action');
-var db_sql = require('./das/sql_action');
+//var db = require('./das/db_action');
+//var db_sql = require('./das/sql_action');
 var app = express();
 
 var logDirectory = __dirname + '/log';
@@ -226,28 +226,30 @@ app.post('/das/dynaAuth', function (request, response) {
     get_body_json_data(request, function(err, body_Obj) {
         if (!err) {
             console.log(request.headers);
-	    body_data = body_Obj['m2m:rqp'];
-	    console.log(body_data);
+	    body_data1= body_Obj['m2m:seci'];
+	    console.log(body_data1);
+	    body_data= body_data1['dreq'];
+//	    body_data = body_Obj['m2m:seci']['dreq'];
     	    for (key in body_data) {
                if(key == 'op' && body_data[key] != 5){
 	           error = "NG:operation of the request is not NOTIFY.";
                    responder.error_result(request, response, 500, 5000, error);
                    return 0;
-               }
+	       }
 
-//               if((key == 'to' || key == 'fr') && body_data[key]){
-               if(key == 'fr' && body_data[key]){
+/*
+               if(key == 'or' && body_data[key]){
                    console.log('original url=',body_data[key]);
-//                   usespid2 = usespid.replace('//','/_/');
-//		   get_abs_address_in_onem2m(body_data[key], usespid2, usecseid,function(rsc,result){
-//                        console.log(result);
-//                        
-//                   });
-		   get_abs_address_in_http(body_data[key], usespid, usecseid,function(rsc,result){
+                   get_abs_address_in_onem2m(body_data[key], usespid, usecseid,function(rsc,result){
                         console.log(result);
-                        body_data[key] = result;
+                        body_data[key] = result;                        
                    });
+//		     get_abs_address_in_http(body_data[key], usespid, usecseid,function(rsc,result){
+//                        console.log(result);
+//                        body_data[key] = result;
+//                   });
                }
+*/
            }  // for in body_data
            // send modified data to DAS server
            // DASのアクセス情報を設定）
