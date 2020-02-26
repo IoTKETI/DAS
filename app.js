@@ -969,7 +969,7 @@ app.post('/das/dynaAuth', async function (request, response) {
 			token.createTokenFromACP(policy_datas,response_info['or'],trids,'JWE',function(err,result){
 			    dres= {};
  			    console.log('token =', result);
-			    dres['tkns'] = [result];
+			    dres['tkns'] = [result['tkob']];
 			    seci= {};
 			    seci['sit'] = 2;	// Dynamic Authorization Response (dres)
 			    seci['dres'] = dres;
@@ -1150,8 +1150,8 @@ app.post('/das/dynaAuth', async function (request, response) {
 
 		//Å@Add list of tokens. ESData shoule be applied to Each token.
 		token.createTokenFromACP([policy_data],response_info['or'],[response_info['trid']],'JWE',function(err,result){
-		console.log('token =', result);
-		dres['tkns'] = [result];
+		    console.log('token =', result);
+		    dres['tkns'] = [result['tkob']];
 		
 		seci= {};
                 seci['sit'] = 2;	// Dynamic Authorization Response (dres)
@@ -1630,6 +1630,7 @@ app.post('/das/token', function (request, response) {
 			// create dai or tokens
 			//			console.log('rlid =', result_object['rlid']);
 			token.createTokenFromACP(policy_datas,or,trids,'JWE',function(err,result){
+/*
 			    dres= {};
  			    console.log('token =', result);
 			    dres['tkns'] = [result];
@@ -1641,6 +1642,13 @@ app.post('/das/token', function (request, response) {
 			    final_response['m2m:seci']=seci;
 			    //  Send back Notify(dynaAuthDasResponse)
 			    responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
+			    return 0;
+*/
+ 			    console.log('token =', result);
+			    final_result={};
+			    final_result['tkid']=result['tkid'];
+			    final_result['tkns']=[result['tkob']];
+			    responder.response_result(request, response, 200, JSON.stringify(final_result), 2000, '');
 			    return 0;
 			});
 		    }

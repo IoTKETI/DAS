@@ -107,7 +107,7 @@ exports.createTokenFromACP = function(acrs, originator_id, target_ids, token_typ
     
     tkvr = '1.0'; // fixed value
     tkid = create_token_id();
-    tkis = usespid + '/' + usecsebase + '/' + usedasaeid; //example.net/myCSE/-/exampleDAS'; // das-ae id (read from das-ae setup file)
+    tkis = usespid + usecseid + '/' + usecsebase + '/' + usedasaeid; //example.net/myCSE/-/exampleDAS'; // das-ae id (read from das-ae setup file)
     tkhd = originator_id;// Originator id
     tknb = get_timestr_from_now(0);
     tkna = get_timestr_from_now(3600);
@@ -157,7 +157,8 @@ exports.createTokenFromACP = function(acrs, originator_id, target_ids, token_typ
 	    console.log('token =', protected_token);
 	    //            return protected_token;
 	    // decoded_token = decode_token(token_type, protected_token, key);
-	    callback(0,protected_token);
+	    //	    callback(0,protected_token);
+	    callback(0,token_info_obj);
         }
     }); // store in token table
 }

@@ -31,9 +31,12 @@ global.defaultbodytype      = 'json';
 // CSE information
  global.usecsehost           = 'ppmoceankato.japaneast.cloudapp.azure.com';
  global.usecseport           = '7579';
- global.usespid              = '//sample.a';
- global.usecseid             = '/mb-cse-a';
- global.usecsebase           = 'mb-base-a';
+ global.usespid              = '//kddi.jp';
+ global.usecseid             = '/cse-id';
+ global.usecsebase           = 'cse-base';
+// global.usespid              = '//sample.a';
+// global.usecseid             = '/mb-cse-a';
+// global.usecsebase           = 'mb-base-a';
 
 // DAS core
 require('./app');
