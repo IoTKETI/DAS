@@ -1647,7 +1647,7 @@ app.post('/das/token', function (request, response) {
  			    console.log('token =', result);
 			    final_result={};
 			    final_result['tkid']=result['tkid'];
-			    final_result['tkns']=[result['tkob']];
+			    final_result['tkns']=result['tkob'];
 			    responder.response_result(request, response, 200, JSON.stringify(final_result), 2000, '');
 			    return 0;
 			});

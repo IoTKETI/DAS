@@ -177,6 +177,12 @@ function get_abs_address_in_http( orig_address, spid, cseid, csebase, callback){
         address = orig_address;
     }
 
+    // structured or unstructured
+    if(address.indexOf(csebase)!= -1){
+	console.log('Structured');
+    }else{
+	console.log('Unstructured');
+    }
 
     if( address.indexOf('/_/') != -1){
         console.log('Absolute (oneM2M)');
@@ -194,24 +200,10 @@ function get_abs_address_in_http( orig_address, spid, cseid, csebase, callback){
         abs_address = spid + address;
     }else if ( address.substr(0,1) == '/') {
         console.log('CSE-Relative(oneM2M)');
-    // structured or unstructured
-	if(address.indexOf(csebase)!= -1){
-	    console.log('Structured');
-            abs_address = spid + cseid + '/' + csebase + address;
-	}else{
-	    console.log('Unstructured');
-            abs_address = spid + cseid  + address;
-	}
+        abs_address = spid + cseid + address;
     }else{
         console.log('CSE-Relative(http)');
-    // structured or unstructured
-	if(address.indexOf(csebase)!= -1){
-	    console.log('Structured');
-            abs_address = spid + cseid + '/' + csebase + '/' + address;
-	}else{
-	    console.log('Unstructured');
-            abs_address = spid + cseid + '/' + address;
-	}
+        abs_address = spid + cseid + '/' + address;
     }
 
     console.log('original address =',address);
@@ -229,7 +221,16 @@ function get_abs_address_in_onem2m(orig_address, spid, cseid, csebase, callback)
         // address‚Ìæ“ª‚Í'‚È‚µ' or / or // or /~/ or /_/ ‚Ì‚¢‚¸‚ê‚© (http://[server_name]:[port_id/‚ª•t‚¢‚Ä‚¢‚È‚¢j
         address = orig_address;
     }
-    console.log(address);
+
+    // structured or unstructured
+    if(address.indexOf(csebase)!= -1){
+	console.log('Structured');
+    }else{
+	console.log('Unstructured');
+    }
+    spid = spid.replace('//','/_/');
+    console.log('spid =', spid);
+    
     if( address.indexOf('/_/') != -1){
         console.log('Absolute (oneM2M)');
         abs_address = address;
@@ -246,26 +247,10 @@ function get_abs_address_in_onem2m(orig_address, spid, cseid, csebase, callback)
         abs_address = spid + address;
     }else if ( address.substr(0,1) == '/') {
         console.log('CSE-Relative(oneM2M)');
-	    // structured or unstructured
-	if(address.indexOf(csebase)!= -1){
-	    console.log('Structured');
-            abs_address = spid + cseid + '/' + csebase + address;
-	}else{
-	    console.log('Unstructured');
-            abs_address = spid + cseid  + address;
-	}	
-//        abs_address = spid + cseid + address;
+        abs_address = spid + cseid + address;
     }else{
         console.log('CSE-Relative(http)');
-    // structured or unstructured
-	if(address.indexOf(csebase)!= -1){
-	    console.log('Structured');
-            abs_address = spid + cseid + '/' + csebase + '/' + address;
-	}else{
-	    console.log('Unstructured');
-            abs_address = spid + cseid + '/' + address;
-	}
-//        abs_address = spid + cseid + '/' + address;
+        abs_address = spid + cseid + '/' + address;
     }
     console.log('original address =',address);
     console.log('converted to (oneM2M) ',abs_address);
@@ -295,14 +280,16 @@ app.post('/das/dynaAuth', function (request, response) {
 
                if(key == 'or' && body_data[key]){
                    console.log('original url=',body_data[key]);
-//                   get_abs_address_in_onem2m(body_data[key], usespid, usecseid,function(rsc,result){
-//                        console.log(result);
-//                        body_data[key] = result;                        
-//                   });
-		   get_abs_address_in_http(body_data[key], usespid, usecseid, usecsebase,function(rsc,result){
+		   /*
+                   get_abs_address_in_onem2m(body_data[key], usespid, usecseid, usecsebase, function(rsc,result){
+                        console.log(result);
+                        body_data[key] = result;                        
+                   });
+		   */
+		   get_abs_address_in_http(body_data[key], usespid, usecseid, usecsebase, function(rsc,result){
                         console.log(result);
                         body_data[key] = result;
-                     });
+                   });
                }
            }  // for in body_data
            // send modified data to DAS server
