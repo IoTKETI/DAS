@@ -72,6 +72,7 @@ CREATE TABLE `ae` (
   `datatypes` varchar(45),
   `type` int(11) unsigned,
   `policy` longtext,
+  PRIMARY KEY (`url`),
   UNIQUE KEY `url_UNIQUE` (`url`),
   CONSTRAINT `ae_url` FOREIGN KEY (`url`) REFERENCES `lookup` (`url`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
