@@ -82,6 +82,8 @@ lt	更新日時
 url	URL		//kddi.jp/cse-id/cse-base		○	○
 rn	リソース名	cse-base		
 csi	CSE-ID		/cse-id		
+aeid    DAS-AE ID       dasaeidsample
+keyinfo 鍵情報(JSON形式) 
 
 ■ae				
 カラム		日本語名	例					PK	外部key
@@ -381,9 +383,9 @@ exports.insert_cb = function(obj, callback) {
     _this.insert_lookup(obj, function (err, results) {
         if(!err) {
             var sql = util.format('insert into cb (' +
-                'url, rn,  csi) ' +
-                'value (\'%s\', \'%s\', \'%s\')',
-                obj.url, obj.rn, obj.sri);
+                'url, rn,  csi, aeid, keyinfo) ' +
+                'value (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\')',
+				  obj.url, obj.rn, obj.sri, obj.aeid, obj.keyinfo);
             db.getResult(sql, '', function (err, results) {
                 if(!err) {
                     console.log('insert_cb ' + obj.ri);

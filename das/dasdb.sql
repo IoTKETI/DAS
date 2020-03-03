@@ -49,6 +49,8 @@ CREATE TABLE `cb` (
   `url` varchar(200) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `rn` varchar(45) NOT NULL,
   `csi` varchar(200) NOT NULL,
+  `aeid` varchar(45),
+  `keyinfo` longtext,
   PRIMARY KEY (`url`),
   UNIQUE KEY `url_UNIQUE` (`url`),
   CONSTRAINT `cb_url` FOREIGN KEY (`url`) REFERENCES `lookup` (`url`) ON DELETE CASCADE ON UPDATE CASCADE
