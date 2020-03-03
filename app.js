@@ -1265,8 +1265,8 @@ app.post('/das/rce', function(request, response) {
             // resourceの情報をlookupテーブルに作成する。作成に　失敗したら、エラーで返す。
             // tyから、保存するテーブルを選択する。
             // そのテーブルに対して、リソース情報を作成する。作成に失敗したら、lookupテーブルで作成したリソースを削除した上で、エラーを返す
-            console.log('headers(x-m2m-origin)=', request.headers['x-m2m-origin']);
-            request.bodyObj.or = request.headers['x-m2m-origin'];
+//            console.log('headers(x-m2m-origin)=', request.headers['x-m2m-origin']);
+//            request.bodyObj.or = request.headers['x-m2m-origin'];
             var url = request.bodyObj.url;
 
            // urlを解析('/'で分解）して、resource nameを取得する。 
