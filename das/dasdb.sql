@@ -1,3 +1,4 @@
+
 -- MySQL dump 10.13  Distrib 8.0.13, for Win64 (x86_64)
 --
 -- Host: localhost    Database: mobiusdb
@@ -32,9 +33,8 @@ CREATE TABLE `lookup` (
   `sri` varchar(45) NOT NULL,
   `ct` varchar(45) NOT NULL,
   `lt` varchar(45) NOT NULL,
-  `or` varchar(45) NOT NULL,
-  PRIMARY KEY (`url`,`or`),
-  UNIQUE KEY `url_UNIQUE` (`url`,`or`)
+  PRIMARY KEY (`url`),
+  UNIQUE KEY `url_UNIQUE` (`url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -111,7 +111,6 @@ CREATE TABLE `acp` (
   `rlid` varchar(45),
   PRIMARY KEY (`trid`,`or`),
   UNIQUE KEY `trid_UNIQUE` (`trid`,`or`),
-/*  CONSTRAINT `acp_trid` FOREIGN KEY (`trid`,`or`) REFERENCES `lookup` (`url`,`or`) ON DELETE CASCADE ON UPDATE CASCADE */
   CONSTRAINT `acp_trid` FOREIGN KEY (`trid`) REFERENCES `lookup` (`url`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -126,7 +125,6 @@ CREATE TABLE `token` (
   `usr` varchar(45),
   PRIMARY KEY (`tkid`,`or`),
   UNIQUE KEY `tkid_UNIQUE` (`tkid`,`or`)
-/*  CONSTRAINT `acp_trid` FOREIGN KEY (`trid`) REFERENCES `lookup` (`url`) ON DELETE CASCADE ON UPDATE CASCADE */
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 

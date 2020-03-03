@@ -75,8 +75,7 @@ url	URL		//kddi.jp/cse-id/cse-base/sensor_ae	○
 ty	リソースタイプ	2		
 sri	リソースID	rkm3nZ7m3G		
 ct	作成日時			
-lt	更新日時			
-or	作成者（要求元）					○	
+lt	更新日時				
 
 ■cb				
 カラム	日本語名	例					PK	外部key
@@ -150,15 +149,11 @@ exports.insert_lookup = function(obj, callback) {
     // resourceの情報をlookupテーブルに格納する
     var ct = moment().utc().format('YYYY-MM-DD HH:mm:ss');
     var lt = ct;
-/*
-    var sql = util.format('insert into lookup (' +
-        'url, ty, sri, ct, lt, or) ' +
-        'values (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\', \'%s\')',
-        obj.url, obj.ty, obj.sri, ct, lt, obj.or);
-*/
     var sql = util.format('insert into lookup ' +
-        'values (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\', \'%s\')',
-        obj.url, obj.ty, obj.sri, ct, lt, obj.or);
+//        'values (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\', \'%s\')',
+//        obj.url, obj.ty, obj.sri, ct, lt, obj.or);
+        'values (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\')',
+        obj.url, obj.ty, obj.sri, ct, lt);
     db.getResult(sql, '', function (err, results) {
         if(!err) {
 //            set_sri_sri(obj.ri, obj.sri, function (err, results) {
