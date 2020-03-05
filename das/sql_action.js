@@ -384,8 +384,8 @@ exports.insert_cb = function(obj, callback) {
         if(!err) {
             var sql = util.format('insert into cb (' +
                 'url, rn,  csi, aeid, keyinfo) ' +
-                'value (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\')',
-				  obj.url, obj.rn, obj.sri, obj.aeid, obj.keyinfo);
+                'value (\'%s\', \'%s\', \'%s\')',
+				  obj.url, obj.rn, obj.sri);
             db.getResult(sql, '', function (err, results) {
                 if(!err) {
                     console.log('insert_cb ' + obj.ri);
