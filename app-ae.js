@@ -19,24 +19,24 @@ if (process.env.NODE_ENV == 'production') {
 }
 var fs = require('fs');
 var http = require('http');
-var querystring = require("querystring");
-var StringDecoder = require('string_decoder').StringDecoder;
-var decoder = new StringDecoder('utf8');
+//var querystring = require("querystring");
+//var StringDecoder = require('string_decoder').StringDecoder;
+//var decoder = new StringDecoder('utf8');
 var express = require('express');
 var bodyParser = require('body-parser');
 var morgan = require('morgan');
-var util = require('util');
+//var util = require('util');
 var url = require('url');
 var ip = require('ip');
-var crypto = require('crypto');
+//var crypto = require('crypto');
 var fileStreamRotator = require('file-stream-rotator');
-var merge = require('merge');
+//var merge = require('merge');
 var https = require('https');
-var moment = require('moment');
+//var moment = require('moment');
 var responder = require('./das/responder');
 var resource = require('./das/resource');
-var db = require('./das/db_action');
-var db_sql = require('./das/sql_action');
+//var db = require('./das/db_action');
+//var db_sql = require('./das/sql_action');
 var app = express();
 
 var logDirectory = __dirname + '/log';
@@ -130,6 +130,29 @@ function get_body_json_data(request, callback){
     request.on('data', function (chunk) {
         fullBody += chunk.toString();
     });
+    console.log('fullbody=',fullBody);
+    request.on('end', function () {
+//        if (fullBody == "") {
+//            callback(1,'body is empty');
+//            return '0';
+//        }
+	try {
+            body_Obj = JSON.parse(fullBody.toString());
+            callback(0,body_Obj);
+	}
+        catch (e) {
+	    console.log(e);
+            callback(1, '[parse_to_json] do not parse json body');
+        }
+    });
+}
+
+function get_body_json_data2(request, callback){
+
+    var fullBody = '';
+    request.on('data', function (chunk) {
+        fullBody += chunk.toString();
+    });
     console.log(fullBody);
     request.on('end', function () {
         if (fullBody == "") {
@@ -141,16 +164,24 @@ function get_body_json_data(request, callback){
     });
 }
 
-function get_abs_address_in_http( orig_address, spid, cseid, callback){
+function get_abs_address_in_http( orig_address, spid, cseid, csebase, callback){
 
     if( orig_address.substring(0,7) == 'http://' ){
         //  http://[server_name]:[port_id/が付いている
         domain_address = orig_address.substring(0, orig_address.indexOf('/',7));
         // addresの先頭は/ or // or /~/ or /_/ のいずれか
         address = orig_address.replace(domain_address,'');
+	console.log('domain address =', domain_address);
     }else{
-        // addressの先頭は'なし' or / or // or /~/ or /_/ のいずれか (http://[server_name]:[port_id/が付いていない）
+        // addressの先頭は'/'なし or / or // or /~/ or /_/ のいずれか (http://[server_name]:[port_id/が付いていない）
         address = orig_address;
+    }
+
+    // structured or unstructured
+    if(address.indexOf(csebase)!= -1){
+	console.log('Structured');
+    }else{
+	console.log('Unstructured');
     }
 
     if( address.indexOf('/_/') != -1){
@@ -172,14 +203,15 @@ function get_abs_address_in_http( orig_address, spid, cseid, callback){
         abs_address = spid + cseid + address;
     }else{
         console.log('CSE-Relative(http)');
-        abs_address = spid + '/' + cseid + '/' + address;
+        abs_address = spid + cseid + '/' + address;
     }
+
     console.log('original address =',address);
     console.log('converted to (http) ',abs_address);
     callback(0,abs_address)
 }
 
-function get_abs_address_in_onem2m(orig_address, spid, cseid, callback){
+function get_abs_address_in_onem2m(orig_address, spid, cseid, csebase, callback){
     if( orig_address.substring(0,7) == 'http://' ){
         //  http://[server_name]:[port_id/が付いている
         domain_address = orig_address.substring(0, orig_address.indexOf('/',7));
@@ -189,7 +221,16 @@ function get_abs_address_in_onem2m(orig_address, spid, cseid, callback){
         // addressの先頭は'なし' or / or // or /~/ or /_/ のいずれか (http://[server_name]:[port_id/が付いていない）
         address = orig_address;
     }
-    console.log(address);
+
+    // structured or unstructured
+    if(address.indexOf(csebase)!= -1){
+	console.log('Structured');
+    }else{
+	console.log('Unstructured');
+    }
+    spid = spid.replace('//','/_/');
+    console.log('spid =', spid);
+    
     if( address.indexOf('/_/') != -1){
         console.log('Absolute (oneM2M)');
         abs_address = address;
@@ -206,10 +247,10 @@ function get_abs_address_in_onem2m(orig_address, spid, cseid, callback){
         abs_address = spid + address;
     }else if ( address.substr(0,1) == '/') {
         console.log('CSE-Relative(oneM2M)');
-        abs_address = spid + '/' + cseid + address;
+        abs_address = spid + cseid + address;
     }else{
         console.log('CSE-Relative(http)');
-        abs_address = spid + '/' + cseid + '/' + address;
+        abs_address = spid + cseid + '/' + address;
     }
     console.log('original address =',address);
     console.log('converted to (oneM2M) ',abs_address);
@@ -226,24 +267,26 @@ app.post('/das/dynaAuth', function (request, response) {
     get_body_json_data(request, function(err, body_Obj) {
         if (!err) {
             console.log(request.headers);
-	    body_data = body_Obj['m2m:rqp'];
-	    console.log(body_data);
+	    body_data1= body_Obj['m2m:seci'];
+	    console.log(body_data1);
+	    body_data= body_data1['dreq'];
+//	    body_data = body_Obj['m2m:seci']['dreq'];
     	    for (key in body_data) {
                if(key == 'op' && body_data[key] != 5){
 	           error = "NG:operation of the request is not NOTIFY.";
                    responder.error_result(request, response, 500, 5000, error);
                    return 0;
-               }
+	       }
 
-//               if((key == 'to' || key == 'fr') && body_data[key]){
-               if(key == 'fr' && body_data[key]){
+               if(key == 'or' && body_data[key]){
                    console.log('original url=',body_data[key]);
-//                   usespid2 = usespid.replace('//','/_/');
-//		   get_abs_address_in_onem2m(body_data[key], usespid2, usecseid,function(rsc,result){
-//                        console.log(result);
-//                        
-//                   });
-		   get_abs_address_in_http(body_data[key], usespid, usecseid,function(rsc,result){
+		   /*
+                   get_abs_address_in_onem2m(body_data[key], usespid, usecseid, usecsebase, function(rsc,result){
+                        console.log(result);
+                        body_data[key] = result;                        
+                   });
+		   */
+		   get_abs_address_in_http(body_data[key], usespid, usecseid, usecsebase, function(rsc,result){
                         console.log(result);
                         body_data[key] = result;
                    });
@@ -270,20 +313,26 @@ app.post('/das/dynaAuth', function (request, response) {
                method: 'POST',
                headers: {
 	           'X-M2M-Origin': usedasaeid,
-       		   'Content-Type': 'application',
-    		   'X-M2M-RI': '2020',
+       		   'Content-Type': 'application/json',
+    		   'X-M2M-RI': request.headers['x-m2m-ri'],
        		   'Content-Length': Buffer.byteLength(qs_data)
 	       },
                body: qs_data,
                json: true
            };
            console.log('options = ',options);
-           var req = http.request(options, function(res) {
+            var req = http.request(options, function(res) {  // Response from DAS
+
                console.log("STATUS: ", res.statusCode);
                console.log("HEADERS: ", JSON.stringify(res.headers));
                res.setEncoding('utf8');
                res.on('data', function(chunk){
                    console.log("BODY: ", chunk);
+		   response.header('x-m2m-ri',request.headers['x-m2m-ri']);
+		   response.header('x-m2m-rsc', res.headers['x-m2m-rsc']);
+		   response.status(res.statusCode).send(chunk);
+
+		       /*
                    if(res.statusCode != 200) {
                        body_Obj = {};
                        body_Obj['dbg'] = chunk;
@@ -293,6 +342,7 @@ app.post('/das/dynaAuth', function (request, response) {
                    var rcv_json = JSON.parse(chunk);
                    console.log(rcv_json);
 		   responder.response_result(request, response, 200, JSON.stringify(rcv_json), 2000, '');
+		   */
               });
               // 応答終了処理
               res.on('end', function(){

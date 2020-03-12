@@ -26,14 +26,6 @@ $ node -v
 v12.9.0
 ```
 
-### 2.3 node install (Obsolete)
-```
-$ curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-$ sudo apt install -y nodejs
-$ node -v
-v8.10.0
-```
-
 ## 3.DAS Server
 ### 3.1 DAS Install
 
@@ -63,7 +55,7 @@ $ mysql -u root -p dasdb < ~/DAS/das/dasdb.sql
 $ sudo vi ~/DAS/conf.json
 ```
 
-csebaseport is the service port number for DAS server
+dasbaseport is the service port number for DAS server
 
 ```
 {

@@ -75,14 +75,15 @@ url	URL		//kddi.jp/cse-id/cse-base/sensor_ae	○
 ty	リソースタイプ	2		
 sri	リソースID	rkm3nZ7m3G		
 ct	作成日時			
-lt	更新日時			
-or	作成者（要求元）					○	
+lt	更新日時				
 
 ■cb				
 カラム	日本語名	例					PK	外部key
 url	URL		//kddi.jp/cse-id/cse-base		○	○
 rn	リソース名	cse-base		
 csi	CSE-ID		/cse-id		
+aeid    DAS-AE ID       dasaeidsample
+keyinfo 鍵情報(JSON形式) 
 
 ■ae				
 カラム		日本語名	例					PK	外部key
@@ -119,17 +120,28 @@ pae		親AE		//kddi.jp/cse-id/cse-base/sensor_ae
 カラム		日本語名		例			PK	外部key
 trid		対象のリソース					○	○
 or		リクエスト元					○	○
-acop		許可オペレーション
-pl		有効時間
-actw		accessControWindow アクセス制御時間帯
-acip_ipv4	accessControlIpAddresses
-acip_ipv6	accessControlIpAddresses
-aclr		accessControlLocationRegion
-acaf		accessControlAuthenticationFlag
+policy
+    acop		許可オペレーション
+    pl		有効時間
+    actw		accessControWindow アクセス制御時間帯
+    acip_ipv4	accessControlIpAddresses
+    acip_ipv6	accessControlIpAddresses
+    aclr		accessControlLocationRegion
+    acaf		accessControlAuthenticationFlag
 ct		作成日時
 lt		更新日時
 usr		ユーザID
-*/				
+role id		ロールID
+
+■token
+カラム		日本語名		例			PK	外部key
+tkid		トークンID					○	○
+or		リクエスト元					○	○
+tkob		トークンオブジェクト				
+payload		トークンPayload（JSON形式）
+user		user_id
+*/
+
 ////////////////////////// Table info ////////////////////////////////////
 
 // lookupテーブルについて
@@ -139,15 +151,11 @@ exports.insert_lookup = function(obj, callback) {
     // resourceの情報をlookupテーブルに格納する
     var ct = moment().utc().format('YYYY-MM-DD HH:mm:ss');
     var lt = ct;
-/*
-    var sql = util.format('insert into lookup (' +
-        'url, ty, sri, ct, lt, or) ' +
-        'values (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\', \'%s\')',
-        obj.url, obj.ty, obj.sri, ct, lt, obj.or);
-*/
     var sql = util.format('insert into lookup ' +
-        'values (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\', \'%s\')',
-        obj.url, obj.ty, obj.sri, ct, lt, obj.or);
+//        'values (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\', \'%s\')',
+//        obj.url, obj.ty, obj.sri, ct, lt, obj.or);
+        'values (\'%s\', \'%s\', \'%s\', \'%s\', \'%s\')',
+        obj.url, obj.ty, obj.sri, ct, lt);
     db.getResult(sql, '', function (err, results) {
         if(!err) {
 //            set_sri_sri(obj.ri, obj.sri, function (err, results) {
@@ -171,7 +179,7 @@ exports.insert_acp = function(obj, callback) {
             var value_str = "";
             bq_flg = "`";
             sq_flg = "'";
-            acp_keys = ['trid', 'or', 'sri', 'policy', 'usr'];
+    acp_keys = ['trid', 'or', 'sri', 'policy', 'usr','rlid'];
             for(var param_name in obj){
                 if(acp_keys.includes(param_name)){
 		    console.log(param_name);
@@ -375,9 +383,9 @@ exports.insert_cb = function(obj, callback) {
     _this.insert_lookup(obj, function (err, results) {
         if(!err) {
             var sql = util.format('insert into cb (' +
-                'url, rn,  csi) ' +
+                'url, rn,  csi, aeid, keyinfo) ' +
                 'value (\'%s\', \'%s\', \'%s\')',
-                obj.url, obj.rn, obj.sri);
+				  obj.url, obj.rn, obj.sri);
             db.getResult(sql, '', function (err, results) {
                 if(!err) {
                     console.log('insert_cb ' + obj.ri);
@@ -440,6 +448,44 @@ exports.select_acp = function(trid, or, callback) {
     db.getResult(sql, '', function (err, results) {
         console.log(err);
         console.log(results);
+        callback(err, results);
+    });
+};
+
+// get all acps related to all roleids
+// and include all of them into 
+exports.select_acps_from_roleids = function(roleids, callback) {
+    console.log('select_acps_from_roleids');
+    sq_flg = "'";
+    roleids_str ="";
+    for (roleid of roleids){
+	console.log('roleid = ', roleid);
+	if(roleids_str.length == 0)
+            roleids_str = "where rlid in (" +sq_flg+ roleid + sq_flg;
+	else
+	    roleids_str = roleids_str + "," +sq_flg+roleid+sq_flg;
+	
+	console.log("roleids_str =",roleids_str);
+    }
+
+    roleids_str = roleids_str + ")";
+    console.log("roleids_str =",roleids_str);
+	var sql = util.format("select * from acp " + roleids_str);
+    	console.log(sql);
+        db.getResult(sql, '', function (err, results) {
+            console.log(err);
+	    console.log(results);
+            callback(err, results);
+        });
+};
+
+exports.select_acp_from_roleid = function(roleid, callback) {
+    console.log('select_acp_from_roleid');
+    var sql = util.format("select * from acp where rlid = \'%s\'", roleid);
+    console.log(sql);
+    db.getResult(sql, '', function (err, results) {
+        console.log('err =', err);
+        console.log('results = ',results[0]);
         callback(err, results);
     });
 };
@@ -876,3 +922,117 @@ exports.delete_acp = function (trid, or, callback){
         callback(err, results);
     });
 };
+
+exports.insert_token = function(obj, callback) {
+    console.log('insert_token ');
+
+            var sql_str = "";
+            var value_str = "";
+            bq_flg = "`";
+            sq_flg = "'";
+    acp_keys = ['tkid', 'or', 'tkob', 'payload', 'usr'];
+            for(var param_name in obj){
+                if(acp_keys.includes(param_name)){
+		    console.log(param_name);
+
+                    if (!sql_str )
+                        if(param_name == 'or')
+			        sql_str = "insert into token (" + bq_flg + param_name + bq_flg;
+                        else
+				sql_str = "insert into token (" + param_name ;
+                    else
+                        if(param_name == 'or')
+			        sql_str = sql_str + "," +  bq_flg + param_name + bq_flg ;
+			else
+	                        sql_str = sql_str + "," + param_name;
+
+                    if(!value_str)
+                        if(param_name == 'payload'){
+	                        value_str = " value (" + sq_flg + JSON.stringify(obj[param_name]) + sq_flg;
+                        }else{
+	                        value_str = " value (" + sq_flg + obj[param_name] + sq_flg;
+                        }
+                    else
+                        if(param_name == 'payload'){
+	                        value_str = value_str + ","  + sq_flg + JSON.stringify(obj[param_name]) + sq_flg;
+                        }else{
+                        	value_str = value_str + "," + sq_flg + obj[param_name] + sq_flg;
+                        }
+                }
+            }
+            sql_str = sql_str + ")";
+            value_str = value_str + ")";
+            sql = sql_str + value_str;
+            console.log(sql);
+
+    db.getResult(sql, '', function (err, results) {
+            console.log(err);
+            console.log(results);
+            console.log('insert_token ' + obj.trid);
+            callback(err, results);
+    });
+};
+
+exports.update_token = function(obj, callback) {
+    console.log('Token can not be updated');
+    callback(1, 'Token can not be updated');
+}
+
+exports.delete_token = function(obj, callback) {
+    console.log(obj);
+        var sql = util.format("DELETE FROM token where tkid = \'%s\' and " + "`" + "or"+ "`"+" = \'%s\'", tkid, or);
+    console.log(sql);
+    db.getResult(sql, '', function (err, results) {
+        // DELETE時も削除した情報を返す（削除前にgetして、返信用のデータを用意しておく必要がある）
+        // DELETEに失敗した場合は、その旨エラーを返す（HTTP Error code = 500)
+        callback(err, results);
+    });
+}
+
+exports.select_tokens_from_tokenids = function(tokenids, callback) {
+    console.log('select_tokens_from_tokenid');
+
+    sq_flg = "'";
+//    comma = ",";
+    tokenids_str ="";
+    for (tokenid of tokenids){
+	if(tokenids_str.length == 0)
+//            tokenids_str = "where tkid in ('" + tokenid + "'";
+            tokenids_str = "where tkid in (" +sq_flg + tokenid + sq_flg;
+	else
+	    //	    tokenids_str = tokenids_str + "," + "'"+ tokenid+"'";
+	    tokenids_str = tokenids_str + "," + sq_flg + tokenid + sq_flg;
+    }
+
+    tokenids_str = tokenids_str + ")";
+    console.log("tokenids_str =",tokenids_str);
+	var sql = util.format("select tkob from token " + tokenids_str);
+    	console.log(sql);
+        db.getResult(sql, '', function (err, results) {
+            console.log(err);
+	    console.log(results);
+            callback(err, results);
+        });
+};
+
+exports.select_token = function(tokenid, callback) {
+    console.log(tokenid);
+    var sql = util.format("SELECT tkob FROM token where tkid = \'%s\'", tkid);
+    console.log(sql);
+    db.getResult(sql, '', function (err, results) {
+	console.log(results);
+        callback(err, results);
+    });
+}
+
+// get tokens list using Originator id and role ids
+exports.select_tokenlist = function(obj, callback) {
+}
+
+// get roleids from Originator id
+exports.select_roleid_list = function(obj, callback){
+}
+
+// get acp info from roleids
+exports.retrieve_tokens_from_roleids = function(obj, callback){
+}

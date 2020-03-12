@@ -30,20 +30,20 @@ var ip = require('ip');
 var fileStreamRotator = require('file-stream-rotator');
 //var merge = require('merge');
 var https = require('https');
-//var moment = require('moment');
+var moment = require('moment');
 var responder = require('./das/responder');
 var resource = require('./das/resource');
 var db = require('./das/db_action');
 var db_sql = require('./das/sql_action');
 var app = express();
-
+var token = require('./das/token');
 var timeCheck = require('./das/time-check.js');
 var geoLocation = require('geolocation-utils');
 var ipRangeCheck = require('ip-range-check');
 var ipaddr = require('ipaddr.js');
 var pathToRegexp = require('path-to-regexp');
 
-global.usespid              = '//kddi-research.jp';
+//global.usespid              = '//kddi-research.jp';
 
 var logDirectory = __dirname + '/log';
 
@@ -89,6 +89,11 @@ db.connect(usedbhost, 3306, 'root', usedbpass, function (rsc) {
         }
     }
 });
+
+console.log('DAS-AEID=',usedasaeid);
+console.log('SPID=',usespid);
+console.log('CSEID=',usecseid);
+console.log('CSEBase=',usecsebase);
 
 // request.bodyの内容を解析して、各バインディングプロトコルをJSON形式に変換した結果を、request.bodyに上書き
 function parse_to_json(request, response, callback) {
@@ -319,20 +324,45 @@ function isValidJson(value) {
   return true
 }
 
+
+function get_body_json_data2(request){
+    return new Promise(function(resolve,reject ) {
+    var fullBody = '';
+    request.on('data', function (chunk) {
+        fullBody += chunk.toString();
+    }).on('end', function () {
+	try {
+	console.log('fullbody=',fullBody);
+        var body_Obj = JSON.parse(fullBody.toString());
+	console.log('body=',body_Obj);
+            resolve(body_Obj);
+	}catch(e){
+//	    console.log(e)
+	    reject(e);
+	}
+    });
+    });
+}
 function get_body_json_data(request, callback){
 
     var fullBody = '';
     request.on('data', function (chunk) {
         fullBody += chunk.toString();
     });
-    console.log(fullBody);
+    console.log('fullbody=',fullBody);
     request.on('end', function () {
-        if (fullBody == "") {
-            callback(1,'body is empty');
-            return '0';
+//        if (fullBody == "") {
+//            callback(1,'body is empty');
+//            return '0';
+//        }
+	try {
+            body_Obj = JSON.parse(fullBody.toString());
+            callback(0,body_Obj);
+	}
+        catch (e) {
+	    console.log(e);
+            callback(1, '[parse_to_json] do not parse json body');
         }
-        body_Obj = JSON.parse(fullBody.toString());
-        callback(0,body_Obj);
     });
 }
 
@@ -380,11 +410,13 @@ function UserException(message) {
 // >
 // 
 // https://github.com/pillarjs/path-to-regexp
-function checkOriginators(rq_or,acor){
-
+function checkOriginators(rq_or,stored_acor){
+    console.log('checkOriginators');
 //        acor = ['all'];
-        acor = ['//kddi.jp/cse-id/cse*base/service_ae','//kddi.jp/cse-id/cse-base/*_ae'];
-
+//        acor = ['//kddi.jp/cse-id/cse*base/service_ae','//kddi.jp/cse-id/cse-base/*_ae'];
+    acor = [];
+    acor.push(stored_acor);
+    
 	var new_acor = [];
 
         console.log(rq_or + ":" + acor);
@@ -472,7 +504,8 @@ function checkOperations(rq_op, acop){
 function checkTimeWindows(rq_time, actw, callback){
 
 	var new_actw=[];
-	actw=["* 0-30 2,6,10,11 * * * *"]
+    //	actw=["* 0-30 2,6,10,11 * * * *"]
+    actw=["* * * * * * *"];    
 	for( var actw_ele of actw) {
 		actw2=actw_ele.replace(/"/g, "");
 		// convert time (in ISO8621 basic format to extended format) as UTC
@@ -604,24 +637,24 @@ function checkGeoLocation(rq_loc,aclr){
 	     console.log('is located inside of the region defined by = ',aclr['accr']);
 
 		region = aclr['accr'];
-                 rq_latlng = geoLocation.createLocation(parseFloat(rq_loc[0]), parseFloat(rq_loc[1]),'LatLon');
-                 rq_diameter = parseFloat(rq_loc[2]);
-	         aclr_latlng = geoLocation.createLocation(parseFloat(region[0]), parseFloat(region[1],'LatLon'),'LatLon')
-	         aclr_diameter = parseFloat(region[2]);
-                 console.log(rq_diameter);
-                 console.log(aclr_diameter);
+                rq_latlng = geoLocation.createLocation(parseFloat(rq_loc[0]), parseFloat(rq_loc[1]),'LatLon');
+                rq_radius = parseFloat(rq_loc[2]);
+	        aclr_latlng = geoLocation.createLocation(parseFloat(region[0]), parseFloat(region[1],'LatLon'),'LatLon')
+	        aclr_radius = parseFloat(region[2]);
+                console.log(rq_radius);
+                console.log(aclr_radius);
 	
-	         distance_between_2points = geoLocation.distanceTo(rq_latlng,aclr_latlng);
-                 console.log(distance_between_2points);
-                 if((distance_between_2points + rq_diameter) <= aclr_diameter){
-		     console.log('OK. Requested area(zone) is inside or equal to the allowed area');
-		     new_aclr['accr']=region;
-	         }
+	        distance_between_2points = geoLocation.distanceTo(rq_latlng,aclr_latlng);
+                console.log(distance_between_2points);
+                if((distance_between_2points + rq_radius) <= aclr_radius){
+		    console.log('OK. Requested area(zone) is inside or equal to the allowed area');
+		    new_aclr['accr']=region;
+	        }
 
 	}else if(!isEmptyObject(rq_loc) && typeof(rq_loc[0]) == 'string'){
                 if(!aclr['accc'] ){
-			console.log('No country code exists for matching');
-			throw new UserException('No country code for matching');
+		   console.log('No country code exists for matching');
+		   throw new UserException('No country code for matching');
 		}
 		// List同士を比較して、requestに含まれる国コードが、ACP側に含まれる場合に、許可リストに追加する
 		// 含まれない国コードは、許可リストには含めない
@@ -665,69 +698,41 @@ function checkAuthentication(acaf, originator){
 function send_back_empty_content(request, response){
 
     final_response = {};
-    final_response['m2m.rsp'] = {};
+    //    final_response['m2m.rsp'] = {};
+    final_response['m2m:seci']={"sit":2, "dres":{}};
     console.log(JSON.stringify(final_response));
     //  Send back empty content
     responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
 }
 
-app.post('/das/dynaAuth', function (request, response) {
-    console.log('app.post dynamicacpinfo\n',request.params);
+app.post('/das/dynaAuth', async function (request, response) {
+    console.log('app.post dynaAuthDasRequest\n',request.params);
+    console.log('headers = ',request.headers);
+    /*
+    var body_Obj = await get_body_json_data2(request).then(function(value){console.log('object =', value)}).catch((err) => {
+        responder.error_result(request, response, 400, 4102, err);
+	console.log(err);
+	return 0;
+    });
+    console.log(body_Obj);
+    var err = 0;
+*/
     get_body_json_data(request, function(err, body_Obj) {
         if (!err) {
             if(isValidJson(JSON.stringify(body_Obj))){
 		console.log('Valid Json');
+		console.log(JSON.stringify(body_Obj));
             }else{
                 console.log('Invalid Json... returning');
                 error = "invalid JSON format."
                 responder.error_result(request, response, 400, 4102, error);
                 return 0;
             }
-	    body_data = body_Obj['m2m:rqp'];
-            error="";
-            mandatory_keys = ['op', 'to', 'fr' ,'rqi' ,'pc'];
-            var keys = Object.keys(body_data);
-
-            for (var mandatory_key of mandatory_keys){
-		if(!keys.includes(mandatory_key)){
-   	            error = "NG:Mandatory parameters NOT matched!";
-                    responder.error_result(request, response, 400, 6023, error);
-                    return 0;
-                }
-            }
+	    
             response_info = {};
-            trt = 0;
 
-    	    for (key in body_data) {
-               if(key == 'op' && body_data[key] != 5){
-	           error = "NG:operation of the request is not NOTIFY.";
-                   responder.error_result(request, response, 500, 5000, error);
-                   return 0;
-               }
-
-               if((key == 'to' || key == 'fr' || key == 'rqi') && !body_data[key]){
-	           error = "NG:Parameter " + key + " of the request is empty.";
-                   responder.error_result(request, response, 400, 6023, error);
-                   return 0;
-               }else {
-                   if(key == 'rqi')
-		       response_info[key] = body_data[key];
-               }
-
-               if(key == 'pc'){
-                   pc_data = body_data[key];
-                   if(!pc_data){
-			error = "NG:Parameter " + key + " of the request is empty.";
-                        responder.error_result(request, response, 500, 5000, error);
-                        return 0;
-                   }
-                   seci_data = pc_data['seci'];
-                   seci_mandatory_keys = ['sit', 'dreq'];
-	           var seci_keys = Object.keys(seci_data);
-	           if( seci_mandatory_keys.sort().toString() != seci_keys.sort().toString()){
-                       responder.error_result(request, response, 500, 5000, 'NG:mandatory security parameters NOT matched!');
-                       return 0;
-                   }
+	    seci_data = body_Obj['m2m:seci'];
+	    console.log('body =',JSON.stringify(seci_data));
 
                    for(seci_key in seci_data ){
 	               if(seci_key == 'sit' && seci_data[seci_key] != 1){					
@@ -738,16 +743,24 @@ app.post('/das/dynaAuth', function (request, response) {
                        if(seci_key == 'dreq'){
                            dreq_data = seci_data[seci_key];
                            console.log('dreq=', dreq_data);
- 	                   dreq_mandatory_keys = ['or', 'trt', 'op', 'trid'];
+ 	                   dreq_mandatory_keys = ['or', 'trt', 'op', 'trid'];  // trid is not mandatory in the onem2m spec, but this parameter should be defined to get proper ACP of the target resource
 		           var dreq_data_keys = Object.keys(dreq_data);
 
                            for (var dreq_mandatory_key of dreq_mandatory_keys){
 		               if(!dreq_data_keys.includes(dreq_mandatory_key)){
-                    	           responder.error_result(request, response, 500, 5000, 'mandatory security parameters NOT matched!');
+				   if(dreq_mandatory_key == 'trid'){  // in the spec 'trid' is option. So if it does not exist or empty, just send back the empty content.
+				       send_back_empty_content(request, response);
+			           }else{
+				       responder.error_result(request, response, 500, 5000, 'mandatory security parameters NOT matched!');
+				   }
 			           return 0;
                 	       }
                            }
 
+			   tids = [];
+			   orid = [];
+			   rfa = [];
+			   
                            for( dreq_key in dreq_data ) {
 			       // originator	m2m:ID
 		               if(dreq_key == 'or'){
@@ -782,7 +795,11 @@ app.post('/das/dynaAuth', function (request, response) {
 			           if( dreq_data[dreq_key]){
 				        rq_ip=dreq_data[dreq_key];
                                         console.log('rq_ip=',rq_ip);
-                                   }
+                                   }else{
+				       // if oip exist, either ipv4/ipv6 should be exist (check the spec)
+				      responder.error_result(request, response, 500, 5000, 'Data of parameter [oip] in [dreq] should not be empty.');
+				       return 0;
+				   }
                                }
 			       // originatorLocation	m2m:locationRegion
 			       if(dreq_key == 'olo'){
@@ -793,9 +810,10 @@ app.post('/das/dynaAuth', function (request, response) {
                                }
 			       // originatorRoleIDs	List of m2m:roleID
 			       if(dreq_key == 'orid'){
+				   console.log('originatorRoleIDs will be implemented in Phase2');
 			           if( dreq_data[dreq_key]){
-				        rq_rid=dreq_data[dreq_key];
-                                        console.log('rq_rid=',rq_rid);
+				        orid=dreq_data[dreq_key];
+                                        console.log('originatorRoleIDs=',orid);
                                    }
                                }
 			       // requestTimestamp	m2m:absRelTimestamp
@@ -805,11 +823,13 @@ app.post('/das/dynaAuth', function (request, response) {
                                         console.log('rq_time=',rq_time);
                                    }
                                }
-			       // オリジナルのPPMでは、trid (option)が存在しないとエラー。これは、情報が無いとACPを決定できないから。
 			       // targetedResourceID	xs:anyURI
                                if(dreq_key == 'trid'){
 			           if( !dreq_data[dreq_key]){
-				       responder.error_result(request, response, 500, 5000, 'Parameter [trid] in [dreq] is empty.');
+				       //				       responder.error_result(request, response, 500, 5000, 'Parameter [trid] in [dreq] is empty.');
+				       // Empty content will be returned when no trid is found
+				       // T.B.D The data format of the empty content should be checked.
+				       send_back_empty_content(request, response);
 				       return 0;
 				   } else
 				        response_info[dreq_key]=dreq_data[dreq_key];
@@ -824,22 +844,36 @@ app.post('/das/dynaAuth', function (request, response) {
 			       // rfa(roleIDsFromACPs)	List of m2m:roleID 
                                if(dreq_key == 'rfa'){
 				   console.log('roleIDsFromACPs will be implemented in Phase2');
+			           if( dreq_data[dreq_key]){
+				        rfa=dreq_data[dreq_key];
+                                        console.log('roleIDsFromACPs=',rfa);
+                                   }
                                }
-			       // tids(token-id list)はフェーズ2	tokenIDs	List of m2m:tokenID
+			       // tids(token-id list) will be supported in phase3.	tokenIDs	List of m2m:tokenID
+
                                if(dreq_key == 'tids'){
-				   console.log('token-id list will be implemented in Phase2');
+				   console.log('token-id list will be implemented in Phase3');
+			           if( dreq_data[dreq_key]){
+				        tids=dreq_data[dreq_key];
+                                        console.log('token-id list=',tids);
+                                   }
                                }
-			       // asi(authorSignIndicator)は未定。authorSignIndicator	xs:boolean
+			       // asi(authorSignIndicator) will be not implemented. authorSignIndicator	xs:boolean
 			       if(dreq_key == 'asi'){
 			           console.log('not implemented');
+				   //// T.B.D when 'asi' is defined, should we just send back the error and terminate the process OR just ignore and continue the process?
+				   //responder.error_result(request, response, 501, 5001, body_Obj['dbg']);
+                                   //return 0;
                                }
                            } // end of for 
                        } // end of if dreq
     	           } // end of for seci_key
+/*
                } // end of pc
            }  // end of for in body_data
+*/
        }else{
-            console.log('body data is missing');
+            console.log('body data is missing or has invalid JSON format');
 	    body_Obj['dbg'] = 'Exception Error.';
             responder.error_result(request, response, 500, 5000, body_Obj['dbg']);
             return 0;
@@ -848,22 +882,137 @@ app.post('/das/dynaAuth', function (request, response) {
 	// Phase2ではTokenもサポートする
 	console.log('Check the validity of received request');
         // header (X-M2M-RIや、Notifyで返信する必要がある。POST）
-	// trt == 4 (contentInstanceの場合は、containerのtridを取得して、containerのACPを返信する）
 
-	if (response_info['trt'] == 4) {
-            data_len = response_info['trid'].length;
-	    splitted_path = response_info['trid'].split('/');
-	    path_depth = splitted_path.length;
-            trid_info = response_info['trid'].substr(0,data_len-(splitted_path[path_depth-1].length + 1));  // 最後の1は'/'分
-	}else{
-	    trid_info = response_info['trid'];
-        }
+	// Phase3
+	// Step 1.Check if token-id exits in the received parameters.
+	// 	Yes: goto indirect DAS flow
+	//		Get token info related to token-id
+	//		if the indirect flow failed, go to next step.
+	//	No: goto Role-ID flow
+	if( !isEmptyObject(tids)) {
+	    console.log('token id received');
+	    try {
+		console.log('Retreive tokens from token-ids');
+		db_sql.select_tokens_from_tokenids(tids,function(err,result){
+		    if(err || isEmptyObject(result)){
+			console.log("no matched token data found for tokenids about " + tids);
+			responder.error_result(request, response, 500, 5000, 'No token data found in DB.');
+                	return 0;
+                    }else{
+			console.log('result2 =',result);
+   		        result_objects = JSON.parse(JSON.stringify(result));
+                        console.log('result_object = ', result_objects);
+			tokens = [];
+			for (tokenObj of result_objects){
+			    tokens.push(tokenObj['tkob']);
+			}
+			dres ={};
+			dres['tkns'] = tokens;
+			seci= {};
+			seci['sit'] = 2;	// Dynamic Authorization Response (dres)
+			seci['dres'] = dres;
+			console.log('seci = ',JSON.stringify(seci));
+			final_response = {};
+			final_response['m2m:seci']=seci;
+			responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
+			return 0;
+		    }
+	    	});
+		
+	    } catch(e) {
+		console.log('Token could not be retreived from given token-id');
+		responder.error_result(request, response, 500, 5000, 'No token data found in DB.');
+                return 0;
+	    }
+	}
+	else if(!isEmptyObject(orid) || !isEmptyObject(rfa)) {  //if any Role-IDs received
+        // Phase 2.Check if Role-IDs (orid and rfa) exits in the received parameters.
+	// 	Yes: goto DAS role-ID flow
+	//		if the role-ID flow failed, go to next step.
+	    //	No: goto control parameter flow
+	    console.log('role id received');
+	    try {
+		console.log('Retrieve ACP info from role-ids');
+		var req_roleids = orid.concat(rfa);
+		console.log('requested roleids =',req_roleids);
+//		var orig_roleids = get_roleids(or);
+//		console.log('roleids for Originator =',oriq_roleids);
+//		filtered_roleids = req_roleids.filter((value) => orig_roleids.includes(value));
+		var filtered_roleids = req_roleids.filter((x, i, self) => self.indexOf(x) === i); // remove duplicated
+		console.log('filtered_roleids = ',filtered_roleids );
+		// get acp info from roleids (and originator) from acp table
+
+		db_sql.select_acps_from_roleids(filtered_roleids,function(err,result){
+		    if(isEmptyObject(result)){
+			console.log("no matched ACP data found for roleids about " + filtered_roleids);
+			responder.error_result(request, response, 500, 5000, 'No ACP data found in DB.');
+                	return 0;
+                    }else{
+			// send back correct ACP info list
+			console.log('result2 =',result);
+   		        result_objects = JSON.parse(JSON.stringify(result));
+			//			console.log('result_objects = ', result_objects);
+			policy_datas = [];
+			trids = [];
+			for (result_object of result_objects){
+			    trid = result_object['trid'];
+			    policy_data = JSON.parse(result_object['policy']);  // Add acor
+			    delete policy_data['pl'];
+			    policy_data['acor'] = [result_object['or']];
+			    trids.push(trid);
+                            policy_datas.push(policy_data);
+			}
+			console.log('trids=', trids);
+			console.log('policy_datas=', policy_datas);
+			// create dai or tokens
+			//			console.log('rlid =', result_object['rlid']);
+			token.createTokenFromACP(policy_datas,response_info['or'],trids,'JWE',function(err,result){
+			    dres= {};
+ 			    console.log('token =', result);
+			    dres['tkns'] = [result['tkob']];
+			    seci= {};
+			    seci['sit'] = 2;	// Dynamic Authorization Response (dres)
+			    seci['dres'] = dres;
+			    console.log('seci = ',JSON.stringify(seci));
+			    final_response = {};
+			    final_response['m2m:seci']=seci;
+			    //  Send back Notify(dynaAuthDasResponse)
+			    responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
+			    return 0;
+			});
+		    }
+	    	});
+	    } catch(e){
+		console.log('Role info could not be retreived from given role-id');
+		responder.error_result(request, response, 500, 5000, 'No role info data found in DB.');
+                return 0;
+	    }	
+	}
+
+	/**/
+	else {
+        // Step 3.Check if access control parameters exists in the received parameters.
+	//	Yes: goto DAS access control parameters flow (implemented in Phase1)
+	//	No: Send back dynaAuthDASResponse with empty content in sit
+        // When any one of the above steps(1-3) is succeeded, DAS sends back the dynaAuthDASResponse to HCSE.
+
+	// trt == 4 (contentInstanceの場合は、containerのtridを取得して、containerのACPを返信する）
+	    if (response_info['trt'] == 4) {
+		data_len = response_info['trid'].length;
+		splitted_path = response_info['trid'].split('/');
+		path_depth = splitted_path.length;
+		trid_info = response_info['trid'].substr(0,data_len-(splitted_path[path_depth-1].length + 1));  // 最後の1は'/'分
+	    }else{
+		trid_info = response_info['trid'];
+            }
 
 	// Retrieve target resource ACP data
+	//  T.B.D  when there is no trid info in db, should we send back empty contents?
 	db_sql.select_acp(trid_info,response_info['or'],function(err,result){
             if(isEmptyObject(result)){
 		console.log("no matched ACP data found for "+ response_info['or'] + " about " + trid_info);
-		responder.error_result(request, response, 500, 5000, 'No data found in DB.');
+		//		responder.error_result(request, response, 500, 5000, 'No data found in DB.');
+		send_back_empty_content(request, response);
                 return 0;
 	    }
 	    else{
@@ -888,128 +1037,146 @@ app.post('/das/dynaAuth', function (request, response) {
 		try {
 	                var result = checkOperations(response_info['op'], policy_data['acop']);
 			policy_data['acop'] = result;
-		}catch(e){
+		}catch(e){                                                                                                                                                      
 			console.log('request operation is NOT OK');
                         send_back_empty_content(request, response);
 			return 0;
 		}
 
                 // check/update ACCO
-                acco = policy_data['acco'];
-
-		try {
-			var result = checkTimeWindows(rq_time,acco['actw']);
-			acco['actw'] = result;
-                }catch(e){
-			console.log('request time is NOT OK');
-                        send_back_empty_content(request, response);
-			return 0 ;
-                };
-
-		try {
+		if('acco' in policy_data){
+                  acco = policy_data['acco'];
+		  delete policy_data['acco']; 
+    	          acco_flag = false;
+                  if(typeof rq_time !== 'undefined'){
+		        try {
+			  var result = checkTimeWindows(rq_time,acco['actw']);
+			  acco['actw'] = result;
+			  acco_flag = true;
+		        }catch(e){
+			  console.log('request time is NOT OK');
+                          send_back_empty_content(request, response);
+			  return 0 ;
+		        };
+		  }else{
+		    console.log('rq_time is not exist!');
+		  }
+		
+                  if(typeof rq_ip !== 'undefined'){
+		    try {
 			var result = checkIPAddress(rq_ip,acco['acip']);
 			acco['acip'] = result;
-		}catch(e){
+			acco_flag = true;
+		    }catch(e){
 			console.log('request ip is NOT OK');
                         send_back_empty_content(request, response);
 			return 0;
-		}
+		    }
+                  }else{
+		    console.log('rq_ip is not exist!');
+                  }
 
-
-		try {
+                  if(typeof rq_loc !== 'undefined'){
+		    try {
 			var result = checkGeoLocation(rq_loc,acco['aclr']);
         	        acco['aclr'] = result;
-	        }catch(e){
+			acco_flag = true;
+	            }catch(e){
 			console.log('request location is NOT OK');
                         send_back_empty_content(request, response);
 			return 0;
-		}
+		    }
+                  }else{
+		    console.log('rq_loc is not exist!');
+                  }
 
+                  if(acco_flag){ 
+                    policy_data['acco'] = acco;
+		    console.log(acco);
+		  }
+		}
+		
 		// check ACOD(resourceType,specializationID,childResourceType)
 		// 必須は、childResourceTypeは子リソースのリスト。作成される親の配下に指定される子のタイプがCreateされる場合にのみACPが適用される
 		// ACODが存在しない場合は、親の配下にCREATEされる子リソースの全てにACPが適用される
 		console.log("ACOD is not supported");
 
-                policy_data['acco'] = acco;
-		console.log(acco);
-
 		// check ACAF (no operation at the moment)
-		try {
+                if('acaf' in policy_data){		
+		    try {
 			var result = checkAuthentication(policy_data['acaf'],response_info['or']);
 			console.log('Authentication is OK. Apply acp.');
-		}catch(e){
+			// acaf is not supported temporarily
+          		delete policy_data['acaf'];
+		    }catch(e){
 			console.log('Authentication is NOT OK');
                         send_back_empty_content(request, response);
 			return 0;
+		    }
 		}
-
+		
 		// plが存在しない場合は、pplが受信データにあればそれを設定する。
-		// plも、pplも存在しない場合は、default値 3600秒とする。
-
+		// plも、pplも存在しない場合は、default値 3600000milli秒とする。
 		if('pl' in policy_data){
-		    ppl_val = policy_data['pl'];
+		    //		    ppl_val =  moment().utc().add(1,'h').format('YYYYMMDDTHHmmss');
+         	    ppl_val =  moment().add(1,'h').format('YYYYMMDDTHHmmss');
                     delete policy_data['pl'];
 		}else if ('ppl' in response_info)
 		    ppl_val = response_info['ppl'];
 		else 
-		    ppl_val = 3600; // default
+		//		    ppl_val = 3600000; // default(milli-sec) could be in 20141003T112032 (absolute time),or 3600000 (relative time)
+		    ppl_val =  moment().add(1,'h').format('YYYYMMDDTHHmmss');
+		// in case absolute time
+		// 
 
                 console.log('ppl = ',ppl_val);
 
 		// Header info
+		console.log('rh=', request.headers);
+		response.setHeader('Content-Type', 'application/json');
+		response.setHeader('x-m2m-ri', request.headers['x-m2m-ri']);
+		response.setHeader('x-m2m-rsc', 2000);
+		response.status(200);
+		console.log('response.headers =', response.headers);
+		
+		dai = {};
+		dai['gp'] = [policy_data];
+		dai['pl'] = ppl_val;
+		console.log('dai = ',dai);
 
-		// Response Status Code 
-		response_hash = {};
-		response_hash['rsc'] = 2000;
+		dres ={};
+		dres['dai'] = dai;
+		console.log('dres = ',dres);
 
-		// X-M2M-RI header
-		response_hash['rqi'] = response_info['rqi'];
-
-		// content (pc)
-
-						// dynamicACPInfo
-						dai = {};
-                				dai['gp'] = [policy_data];
-                				dai['pl'] = ppl_val;
-                				console.log('dai = ',dai);
-
-					// tokenとdaiは両方含まれるケースはある。
-                			dres ={};
-					dres['dai'] = dai;
-                			console.log('dres = ',dres);
-//					Add list of tokens. ESData shoule be applied to Each token.
-//					tokens = createTokenList();
-//					dres['tkns'] = tokens;
-
-		                seci= {};
-                		seci['sit'] = 2;	// Dynamic Authorization Response (dres)
-                		seci['dres'] = dres;
-                		console.log('seci = ',seci);
-
-			pc = {};
-        	        pc['seci'] = seci;
-			console.log('pc = ',pc);
-
-                response_hash['pc'] = pc;
+		//　Add list of tokens. ESData shoule be applied to Each token.
+		token.createTokenFromACP([policy_data],response_info['or'],[response_info['trid']],'JWE',function(err,result){
+		    console.log('token =', result);
+		    dres['tkns'] = [result['tkob']];
+		
+		seci= {};
+                seci['sit'] = 2;	// Dynamic Authorization Response (dres)
+                seci['dres'] = dres;
+                console.log('seci = ',JSON.stringify(seci));
 
                 final_response = {};
-		final_response['m2m.rsp'] = response_hash;
-		console.log(JSON.stringify(final_response));
-
-                //  Send back dynamicACPInfo
-		responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
+                final_response['m2m:seci']=seci;
+                //  Send back Notify(dynaAuthDasResponse)
+		    responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
+		});
 	    }
 	});
-    });
+	}
+/**/
+    });  // end of  get_body_json_data()
 });
 
 
 // (2) /das/acp 認可情報の登録/更新(登録済の場合は更新する）
-// パラメータ名				必須
-// ターゲットID				○
+// パラメータ名			必須
+// ターゲットID			○
 // リクエスト元ID			○
 // ユーザID				
-// ACP情報				○
+// ACP情報			○
 // 	許可オペレーション		○
 // 	有効時間			○
 //      ACCO
@@ -1098,8 +1265,8 @@ app.post('/das/rce', function(request, response) {
             // resourceの情報をlookupテーブルに作成する。作成に　失敗したら、エラーで返す。
             // tyから、保存するテーブルを選択する。
             // そのテーブルに対して、リソース情報を作成する。作成に失敗したら、lookupテーブルで作成したリソースを削除した上で、エラーを返す
-            console.log('headers(x-m2m-origin)=', request.headers['x-m2m-origin']);
-            request.bodyObj.or = request.headers['x-m2m-origin'];
+//            console.log('headers(x-m2m-origin)=', request.headers['x-m2m-origin']);
+//            request.bodyObj.or = request.headers['x-m2m-origin'];
             var url = request.bodyObj.url;
 
            // urlを解析('/'で分解）して、resource nameを取得する。 
@@ -1161,13 +1328,13 @@ app.get('/das/rce/_/:resource_uri', function(request, response) {
 // (2) /das/rcelist
 //
 // 全パラメータはオプション！
-// ty			リソースタイプ		完全一致
-// class		AEのクラス		完全一致
-// usr			ユーザＩＤ		完全一致
-// name			表示名			完全一致
-// datatype		データ種別		部分一致（ae, cnt)
+// ty			リソースタイプ	完全一致
+// class		AEのクラス	完全一致
+// usr			ユーザＩD	完全一致
+// name			表示名		完全一致
+// datatype		データ種別	部分一致（ae, cnt)
 // type			AEタイプ		完全一致
-// pae			親AE			完全一致
+// pae			親AE		完全一致
 
 // 出力
 // {
@@ -1392,5 +1559,159 @@ app.delete('/das/acp', function (request, response) {
 	    console.log('no data found');
             responder.error_result(request, response, 500, 5000, 'Exception Error.');
         }
+    });
+});
+
+// 　input parameters in body:
+//   Originator-id(or), userId(option), role-id(rlid), role-info(tkis,tkhd(Originator-id),tknd,tkna),access priviledge(option)
+//
+//   token claimset(payload):
+//   　tkvr,tkid,tkis,tkhd,tknb,tkna,tknm(option, token name),tkau(option, audience),tkps(option, permission),tkex(option)
+//    what to set in tkvr is not described.
+//    tkid should be created by DAS
+//    tkis should be the address (id) of DAS
+//    tknb, tkna should be the same value received in input parameters (of role)
+//    tknm, optional
+//    tkau, optional
+//    tkps, (should be set by Role-IDs or/and the access priviledged received in input parameters)
+//    tkex, optional
+//
+//    and when sending/receiving the token data, the format should be converted to oneM2M JWT claim set and ESData protected
+//    generated token should be stored in the token repository
+//    And when new token for role is created, the access priviledged info received from role issuer should be used to create
+//    a new ACP record in ACP table and the target resource of the ACP should be also created in resource table.
+//    The sequence should be:
+//        1. Servicer ask to regist AE/cnt/cin info for target resource (if not exsists) record in dasdb
+//        2. Then create ACP info in dasdb related with the registered target resource and also store role-id (in proper resource table)
+//        3. Then create token info related to this role-ids in dasdb (token table)
+
+// Input:
+//   Originator id(M), Resource target id(O), Roleids (M)
+// Output:
+//   token with trids and granted priviledged infos
+// Process:
+//   Search ACP table with or(m)/rlid(m)
+app.post('/das/token', function (request, response) {
+    console.log('app.post token create\n');
+    
+    get_body_json_data(request, function(err, body_Obj) {
+	    console.log(typeof(body_Obj));
+        console.log('body data =',body_Obj);
+	
+	if (!err) {
+	    or = body_Obj['or'];
+	    console.log('originator =', or);
+	    roleids = body_Obj['rlids'];
+	    console.log('roleids =',roleids);
+	    
+	    try {
+	        db_sql.select_acps_from_roleids(roleids,function(err,result){
+		    if(isEmptyObject(result)){
+			console.log("no matched ACP data found for roleids about " + filtered_roleids);
+			responder.error_result(request, response, 500, 5000, 'No ACP data found in DB.');
+                	return 0;
+                    }else{
+			// send back correct ACP info list
+			console.log('result2 =',result);
+   		        result_objects = JSON.parse(JSON.stringify(result));
+			//			console.log('result_objects = ', result_objects);
+			policy_datas = [];
+			trids = [];
+			for (result_object of result_objects){
+			    trid = result_object['trid'];
+			    policy_data = JSON.parse(result_object['policy']);  // Add acor
+			    delete policy_data['pl'];
+			    policy_data['acor'] = [result_object['or']];
+			    trids.push(trid);
+                            policy_datas.push(policy_data);
+			}
+			console.log('trids=', trids);
+			console.log('policy_datas=', policy_datas);
+			// create dai or tokens
+			//			console.log('rlid =', result_object['rlid']);
+			token.createTokenFromACP(policy_datas,or,trids,'JWE',function(err,result){
+/*
+			    dres= {};
+ 			    console.log('token =', result);
+			    dres['tkns'] = [result];
+			    seci= {};
+			    seci['sit'] = 2;	// Dynamic Authorization Response (dres)
+			    seci['dres'] = dres;
+			    console.log('seci = ',JSON.stringify(seci));
+			    final_response = {};
+			    final_response['m2m:seci']=seci;
+			    //  Send back Notify(dynaAuthDasResponse)
+			    responder.response_result(request, response, 200, JSON.stringify(final_response), 2000, '');
+			    return 0;
+*/
+ 			    console.log('token =', result);
+			    final_result={};
+			    final_result['tkid']=result['tkid'];
+			    final_result['tkns']=result['tkob'];
+			    responder.response_result(request, response, 200, JSON.stringify(final_result), 2000, '');
+			    return 0;
+			});
+		    }
+	    	});
+	    } catch(e){
+		console.log('Role info could not be retreived from given role-id');
+		responder.error_result(request, response, 500, 5000, 'No role info data found in DB.');
+                return 0;
+	    }
+//	    onem2m_token = create_onem2m_token();
+//	    console.log(onem2m_token);
+	}else{
+	    // sendback error
+	    console.log('invalid json');
+	}
+    });
+});
+
+app.put('/das/token', function (request, response) {
+    console.log('app.put token update\n');
+    get_body_json_data(request, function(err, body_Obj) {
+	if (!err) {
+            console.log(body_Obj);
+	    
+	    created_token = token.create_onem2m_token(body_Obj);
+	    
+	}
+    });
+});
+
+app.delete('/das/token', function (request, response) {
+    console.log('app.delete token detele\n');
+    get_body_json_data(request, function(err, body_Obj) {
+	if (!err) {
+            console.log(body_Obj);
+	    
+	    deleted_token = token.delete_token();
+	    
+	}
+    });
+});
+
+app.get('/das/token', function (request, response) {
+    console.log('app.get token create\n');
+    get_body_json_data(request, function(err, body_Obj) {
+	if (!err) {
+            console.log(body_Obj);
+	    
+	    retrieve_token = token.retrieve_token();
+	    
+	}
+    });
+});
+
+// Originator-idからToken一覧を取得する
+app.get('/das/tokenlist', function (request, response) {
+    console.log('app.get token list\n');
+    get_body_json_data(request, function(err, body_Obj) {
+	if (!err) {
+            console.log(body_Obj);
+	    
+	    retrieve_token = token.retrieve_token_list();
+	    
+	}
     });
 });

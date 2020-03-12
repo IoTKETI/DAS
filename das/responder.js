@@ -14,32 +14,32 @@ exports.response_result = function(request, response, status, body_Obj, rsc, cap
     console.log('response_result');
     request.headers.usebodytype = 'json';
     response.header('Content-Type', 'application/json');
+    response.header('x-m2m-ri',request.headers['x-m2m-ri']);
+    response.header('x-m2m-rsc', rsc);
     console.log(body_Obj);
     // 以下は、JSON形式のデータで、"\"や"\[","]\"などの余計なエスケープを削除するため。
     // エラーメッセージに関しては、replaceコマンドは不要。あるいは、文字列化する？
-//    var bodyString = JSON.parse(JSON.stringify(body_Obj));
-//    console.log(bodyString);
+    body_Obj1 = body_Obj.replace(/\\/g, "").replace(/\"\{/g, "{").replace(/\}\"/g, "}");
+    console.log(body_Obj1);
+    response.status(status).end(body_Obj1);  // こっちは、サーチ時の出力
+
+    /*
     body_Obj1 = body_Obj.replace(/\\/g, "");
     console.log(body_Obj1);
-
-//    body_Obj2 = body_Obj1.replace(/\"\[/g, "[");
-//    new_body_Obj = body_Obj2.replace(/\]\"/g, "]");
     new_body_Obj1 = body_Obj1.replace(/\"\{/g, "{");
     new_body_Obj2 = new_body_Obj1.replace(/\}\"/g, "}");
-//    new_body_Obj3 = new_body_Obj2.replace(/\\\"/g, "");
-
     console.log(new_body_Obj2);
-//    response.status(status).end(new_body_Obj); // こっちは、登録時の出力
-//    console.log(typeof(new_body_Obj));
-//    console.log(typeof(bodyString));
-
     response.status(status).end(new_body_Obj2);  // こっちは、サーチ時の出力
+*/
 };
 
 exports.error_result = function(request, response, status, rsc, dbg_string) {
 
     var body_Obj = {};
     body_Obj['dbg'] = dbg_string;
-    response.status(status).send(dbg_string);
+    response.header('x-m2m-ri',request.headers['x-m2m-ri']);
+    response.header('x-m2m-rsc', rsc);
+    response.status(status).end(body_Obj);
+//    response.status(status).send(dbg_string);
     //    _this.response_result(request, response, status, body_Obj, rsc, request.url, body_Obj['dbg']);
 };

@@ -1,3 +1,4 @@
+
 -- MySQL dump 10.13  Distrib 8.0.13, for Win64 (x86_64)
 --
 -- Host: localhost    Database: mobiusdb
@@ -15,7 +16,10 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
+CREATE DATABASE IF NOT EXISTS `dasdb`;
+
 USE `dasdb`;
+
 --
 -- Table structure for table `lookup`
 --
@@ -29,9 +33,8 @@ CREATE TABLE `lookup` (
   `sri` varchar(45) NOT NULL,
   `ct` varchar(45) NOT NULL,
   `lt` varchar(45) NOT NULL,
-  `or` varchar(45) NOT NULL,
-  PRIMARY KEY (`url`,`or`),
-  UNIQUE KEY `url_UNIQUE` (`url`,`or`)
+  PRIMARY KEY (`url`),
+  UNIQUE KEY `url_UNIQUE` (`url`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -63,12 +66,13 @@ CREATE TABLE `ae` (
   `url` varchar(200) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
   `rn` varchar(45) NOT NULL,
   `aei` varchar(45) NOT NULL,
-  `class` int(11) unsigned NOT NULL,
-  `usr` varchar(45) NOT NULL,
-  `name` varchar(45) NOT NULL,
-  `datatypes` varchar(45) DEFAULT NULL,
-  `type` int(11) unsigned DEFAULT NULL,
-  `policy` longtext NOT NULL,
+  `class` int(11) unsigned,
+  `usr` varchar(45),
+  `name` varchar(45),
+  `datatypes` varchar(45),
+  `type` int(11) unsigned,
+  `policy` longtext,
+  PRIMARY KEY (`url`),
   UNIQUE KEY `url_UNIQUE` (`url`),
   CONSTRAINT `ae_url` FOREIGN KEY (`url`) REFERENCES `lookup` (`url`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -103,12 +107,26 @@ CREATE TABLE `acp` (
   `policy` longtext NOT NULL,
   `ct` varchar(45) NOT NULL,
   `lt` varchar(45) NOT NULL,
-  `usr` varchar(45) NOT NULL,  
+  `usr` varchar(45),
+  `rlid` varchar(45),
   PRIMARY KEY (`trid`,`or`),
   UNIQUE KEY `trid_UNIQUE` (`trid`,`or`),
-/*  CONSTRAINT `acp_trid` FOREIGN KEY (`trid`,`or`) REFERENCES `lookup` (`url`,`or`) ON DELETE CASCADE ON UPDATE CASCADE */
   CONSTRAINT `acp_trid` FOREIGN KEY (`trid`) REFERENCES `lookup` (`url`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `token`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+ SET character_set_client = utf8mb4 ;
+CREATE TABLE `token` (
+  `tkid` varchar(45) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+  `or` varchar(45) NOT NULL,
+  `tkob` longtext NOT NULL,
+  `payload` longtext NOT NULL,
+  `usr` varchar(45),
+  PRIMARY KEY (`tkid`,`or`),
+  UNIQUE KEY `tkid_UNIQUE` (`tkid`,`or`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

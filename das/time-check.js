@@ -24,15 +24,15 @@
 //  var expressions = removeSpaces(expression).split(' ');
 //    var expressions = expression.split(' ');
 //   expressions = appendSeccondExpression(expressions);
-    console.log('1',expressions);
+//    console.log('1',expressions);
     expressions = convertAsterisksToRanges(expressions);
-    console.log('2',expressions);
+//    console.log('2',expressions);
     expressions = convertAllRanges(expressions);
-    console.log('3',expressions);
+//    console.log('3',expressions);
     expressions = convertSteps(expressions);
-    console.log('4',expressions);
+//    console.log('4',expressions);
     expressions = normalizeIntegers(expressions);
-    console.log('5',expressions);
+//    console.log('5',expressions);
     return expressions.join(' ');
   }
 
@@ -222,7 +222,7 @@ exports.req_time_validation = function( pattern, date){
   var executablePattern = convertExpression(patterns);
   var executablePatterns = executablePattern.split(' ');
 
-  console.log(executablePatterns);
+//  console.log(executablePatterns);
   console.log('second:',date.getSeconds());
   console.log('Minutes:',date.getMinutes());
   console.log('Hours:',date.getHours());
