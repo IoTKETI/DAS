@@ -28,16 +28,7 @@ Figure 2 Interconnection between DAS and IoT applications/devices and IN-CSE
 
 ### Introduction
 
-<to be modified>
-
-DAS is a middleware server platform that connects diverse IoT devices through physical
-communication medias and creates virtual representations (oneM2M resources) for each IoT
-device to enable the interactions between each other as well as the communication between
-devices and IoT applications. In this way, DAS provides an open environment and APIs for
-users to interconnect their own devices together and develop user specific IoT services to
-build an IoT ecosystem. Figure 3 shows the components of DAS platform i.e.  IoT applications/devices, IN-CSE, and DAS Server/DAS-AE(s).
-
-<to be modified>
+DAS is a middleware server platform that creates virtual representations (oneM2M resources) and access control policy for each IoT device to enable the dynamic authorization system for devices and IoT applications.  Figure 3 shows the components of DAS platform i.e.  IoT applications/devices, IN-CSE, and DAS Server/DAS-AE(s).
 
 
 
@@ -110,7 +101,7 @@ Figure 6 DAS platform S/W architecture
 
 The figure below shows the DAS Node JS source directory. For the detailed functions and
 roles for each Node JS file, please refer to the Table 1.
-
+```
 │─ app-ae.js
 │─  app.js
 │─  conf-ae.json
@@ -130,13 +121,13 @@ roles for each Node JS file, please refer to the Table 1.
         │─ sql_action.js
         │─ time-check.js
         └─token.js
-
+```
 Figure 7 DAS Node JS source code directory
 
   - Table 1 Function Reference Table for Node JS Files
 
     | Source File       | Role and Function                                            |
-    | ----------------- | ------------------------------------------------------------ |
+    |:-----------------|:------------------------------------------------------------|
     | app.js            | This file acts as role of flow router and it is the main code running Mobius-YT server.<br/>① It handles initial processing of received packets.<br/>② It initiates HTTP server with ‘listening’ mode to wait for HTTP requests target to the DAS HTTP server.<br/>③ It handles the parsing of URL of packets and evaluate the correctness of the request body resulted of parsing. It then sends the request to resource.js to continue the processing if the request is valid one, otherwise throws exceptions.<br/>④ It also contains the logic for checking access control information received from IN-CSE to generate temporal access control policy or granting permission. |
     | app-ae.js         | This file acts as role of flow router and it is the main code running Mobius-YT server.<br/>① It handles initial processing of received packets.<br/>② It initiates HTTP server with ‘listening’ mode to wait for HTTP requests target to the DAS AE HTTP server.<br/>③ It handles the parsing of URL of packets and evaluate the correctness of the request body resulted of parsing. If the request is targeted to DAS Server, it forwards the request to DAS Server.<br />④ It registers itself to IN-CSE to enable a trusted communication. |
     | dasserver.js      | This file initiates DAS server and helps loading main Node JS files.<br/>It also contains configuration parameters for DAS server such as defaultbodytype indicating the serialization, usecsebase<br/>indicating CSEBase name, usecseid indicating CSEID, usedbhost indicating the host address running MySQL, and usedbpass indicating the password for MySQL etc. Users can modify those configuration parameters. |
@@ -173,7 +164,7 @@ DAS is providing Restful API to manage the resource and ACP info, and dynamic au
   - Table 2 API lists
 
     | Functionality       | URI  |  Method |
-    | ----------------- | ------------------------------------------------------------ | ------|
+    |:-----------------|:------------------------------------------------------------|:------|
     | dynamic Authorization|das/dynaAuth	|POST|
     | create resource|das/rce	|POST|
     |   retrieve resource|das/rce/_/{resource_uri}|	GET|
