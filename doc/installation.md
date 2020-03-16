@@ -127,7 +127,7 @@ Figure 7 DAS Node JS source code directory
   - Table 1 Function Reference Table for Node JS Files
 
 | TH1 | TH2 |
-----|---- 
+|----|----|
 | TD1 | TD3 |
 | TD2 | TD4 |
 
