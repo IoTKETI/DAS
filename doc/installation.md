@@ -133,13 +133,13 @@ Figure 7 DAS Node JS source code directory
 
 | Source File       | Role and Function                                            |
 |:-----------------|:------------------------------------------------------------|
-| app.js            | This file acts as role of flow router and it is the main code running Mobius-YT server.<br/>① It handles initial processing of received packets.<br/>② It initiates HTTP server with ‘listening’ mode to wait for HTTP requests target to the DAS HTTP server.<br/>③ It handles the parsing of URL of packets and evaluate the correctness of the request body resulted of parsing. It then sends the request to resource.js to continue the processing if the request is valid one, otherwise throws exceptions.<br/>④ It also contains the logic for checking access control information received from IN-CSE to generate temporal access control policy or granting permission. |
-| app-ae.js         | This file acts as role of flow router and it is the main code running Mobius-YT server.<br/>① It handles initial processing of received packets.<br/>② It initiates HTTP server with ‘listening’ mode to wait for HTTP requests target to the DAS AE HTTP server.<br/>③ It handles the parsing of URL of packets and evaluate the correctness of the request body resulted of parsing. If the request is targeted to DAS Server, it forwards the request to DAS Server.<br />④ It registers itself to IN-CSE to enable a trusted communication. |
-| dasserver.js      | This file initiates DAS server and helps loading main Node JS files.<br/>It also contains configuration parameters for DAS server such as defaultbodytype indicating the serialization, usecsebase<br/>indicating CSEBase name, usecseid indicating CSEID, usedbhost indicating the host address running MySQL, and usedbpass indicating the password for MySQL etc. Users can modify those configuration parameters. |
-| das-ae.js         | This file initiates DAS AE and helps loading main Node JS files.<br/>It also contains configuration parameters for DAS AE such as  usecsebase indicating CSEBase name, usecseid indicating CSEID etc. Users can modify those configuration parameters. |
+| app.js            | This file acts as role of flow router and it is the main code running DAS server.<br>① It handles initial processing of received packets.<br>② It initiates HTTP server with ‘listening’ mode to wait for HTTP requests target to the DAS HTTP server.<br>③ It handles the parsing of URL of packets and evaluate the correctness of the request body resulted of parsing. It then sends the request to resource.js to continue the processing if the request is valid one, otherwise throws exceptions.<br>④ It also contains the logic for checking access control information received from IN-CSE to generate temporal access control policy or granting permission. |
+| app-ae.js         | This file acts as role of flow router and it is the main code running DAS server.<br>① It handles initial processing of received packets.<br>② It initiates HTTP server with ‘listening’ mode to wait for HTTP requests target to the DAS AE HTTP server.<br>③ It handles the parsing of URL of packets and evaluate the correctness of the request body resulted of parsing. If the request is targeted to DAS Server, it forwards the request to DAS Server.<br>④ It registers itself to IN-CSE to enable a trusted communication. |
+| dasserver.js      | This file initiates DAS server and helps loading main Node JS files.<br>It also contains configuration parameters for DAS server such as defaultbodytype indicating the serialization, usecsebase<br/>indicating CSEBase name, usecseid indicating CSEID, usedbhost indicating the host address running MySQL, and usedbpass indicating the password for MySQL etc. Users can modify those configuration parameters. |
+| das-ae.js         | This file initiates DAS AE and helps loading main Node JS files.<br>It also contains configuration parameters for DAS AE such as  usecsebase indicating CSEBase name, usecseid indicating CSEID etc. Users can modify those configuration parameters. |
 | das/db_action.js  | This file contains parameters used to connect and access to the database and parameters for returning response results from the database. |
-| das/resource.js   | It is core file to process the CREATE, RETRIEVE, UPDATE, DELETE, NOTIFY and DISCOVERY operations for oneM2M resource primitives, access control info, and tokens.<br/>This file undertakes the processing of parsed request URI and request body received from app.js according to corresponding operation. It converts the data into a format to process the data and connect to mysql database.<br/>The mysql database is initialized and handled by db_action.js and sql_action.js module. |
-| das/responder.js  | It is responsible for handling the response process.<br/>It receives processing results from app.js and resource.js modules and generates responses from the processing results in JSON serialization format. |
+| das/resource.js   | It is core file to process the CREATE, RETRIEVE, UPDATE, DELETE, NOTIFY and DISCOVERY operations for oneM2M resource primitives, access control info, and tokens.<br>This file undertakes the processing of parsed request URI and request body received from app.js according to corresponding operation. It converts the data into a format to process the data and connect to mysql database.<br>The mysql database is initialized and handled by db_action.js and sql_action.js module. |
+| das/responder.js  | It is responsible for handling the response process.<br>It receives processing results from app.js and resource.js modules and generates responses from the processing results in JSON serialization format. |
 | das/sql_action.js | This file contains functions to receive data and parameters required for a series of database operations and functions to call db_action.js module to return data from database. |
 | das/time-check.js | This file contains functions to realizing the time-window based access control mechanism. |
 | das/token.js      | This file contains functions to generate and store access tokens. |
@@ -167,20 +167,20 @@ DAS is providing Restful API to manage the resource and ACP info, and dynamic au
 
   - Table 2 API lists
 
-    | Functionality       | URI  |  Method |
-    |:-----------------|:------------------------------------------------------------|:------|
-    | dynamic Authorization|das/dynaAuth	|POST|
-    | create resource|das/rce	|POST|
-    |   retrieve resource|das/rce/_/{resource_uri}|	GET|
-    |update resource	|das/rce/_/{resource_uri}|	PUT|
-    |delete resource	|das/rce/_/{resource_uri}|	DELETE|
-	| retrieve resource list|das/rceList|	GET|
-	| create ACP|	das/acp|	POST|
-	| retrieve ACP| 	das/acp|	GET|
-	| update ACP|	das/acp	|PUT|
-	| delete ACP|	das/acp|	DELETE|
-	| retrieve ACP list|	das/acpList|	GET|
-	| create token| das/token|	POST|
+| Functionality       | URI  |  Method |
+|:-----------------|:-------------|:------|
+| dynamic Authorization|das/dynaAuth	|POST|
+| create resource|das/rce	|POST|
+| retrieve resource|das/rce/_/{resource_uri}|	GET|
+| update resource	|das/rce/_/{resource_uri}|	PUT|
+| delete resource	|das/rce/_/{resource_uri}|	DELETE|
+| retrieve resource list|das/rceList|	GET|
+| create ACP|	das/acp|	POST|
+| retrieve ACP| 	das/acp|	GET|
+| update ACP|	das/acp	|PUT|
+| delete ACP|	das/acp|	DELETE|
+| retrieve ACP list|	das/acpList|	GET|
+| create token| das/token|	POST|
 
 # DAS Server Platform Installation
 
