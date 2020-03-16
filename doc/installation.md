@@ -71,7 +71,7 @@ The call flows as shown in Figure 4 indicates the communications and interaction
 
 ### Components
 
-Mobius server consists of HTTP server and MySQL DBMS while IoT applications implement HTTP clients in order to communicate with DAS server directly or indirectly via IN-CSE.
+DAS server consists of HTTP server and MySQL DBMS while IoT applications implement HTTP clients in order to communicate with DAS server directly or indirectly via IN-CSE.
 
 
 
@@ -324,6 +324,7 @@ das-ae (http) (10.0.75.1) running at 7581 port
 ## Testing tools
 
 [SwaggerEditor](https://editor.swagger.io/)
+
 [YAML file for SwaggerEditor]()
 
 [Postman](https://www.getpostman.com/)
