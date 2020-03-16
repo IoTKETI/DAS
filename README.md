@@ -18,7 +18,7 @@ It is also designed to connect to CSE server platform like 'WDC' (formerly known
 In oneM2M architecture, DAS implements the DAS Server which could be the cloud server. IoT applications communicate with DAS directly or via IN-CSE.
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/29790334/28322739-d7fddbc4-6c11-11e7-9180-827be6d997f0.png" width="800"/>
+<img src="" width="800"/>
 </div>
 
 ## Connectivity Structure
@@ -31,7 +31,7 @@ To enable Internet of Things, things are connected to IN-CSE via IoT/M2M Gateway
 ## Software Architecture
 
 <div align="center">
-<img src="https://user-images.githubusercontent.com/29790334/28245393-a1159d5e-6a40-11e7-8948-4262bf29c371.png" width="800"/>
+<img src="" width="800"/>
 </div>
 
 ## Supported Protocol Bindings
@@ -134,7 +134,9 @@ If you want more details please see the full [installation guide document](https
 - 
 
 ## Author
+
 Norihiro Okui (no-okui@kddi.com)
+
 Michiyoshi Sato (xmi-sato@tsm.kddi-research.jp)
 
 ## License
