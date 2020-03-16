@@ -101,6 +101,7 @@ Figure 6 DAS platform S/W architecture
 
 The figure below shows the DAS Node JS source directory. For the detailed functions and
 roles for each Node JS file, please refer to the Table 1.
+
 ```
 │─ app-ae.js
 │─  app.js
@@ -122,17 +123,13 @@ roles for each Node JS file, please refer to the Table 1.
         │─ time-check.js
         └─token.js
 ```
+
 Figure 7 DAS Node JS source code directory
 
   - Table 1 Function Reference Table for Node JS Files
 
-| TH1 | TH2 |
-|----|----|
-| TD1 | TD3 |
-| TD2 | TD4 |
-
 | Source File       | Role and Function                                            |
-|:-----------------|:------------------------------------------------------------|
+|:---|:---|
 | app.js            | This file acts as role of flow router and it is the main code running DAS server.<br>① It handles initial processing of received packets.<br>② It initiates HTTP server with ‘listening’ mode to wait for HTTP requests target to the DAS HTTP server.<br>③ It handles the parsing of URL of packets and evaluate the correctness of the request body resulted of parsing. It then sends the request to resource.js to continue the processing if the request is valid one, otherwise throws exceptions.<br>④ It also contains the logic for checking access control information received from IN-CSE to generate temporal access control policy or granting permission. |
 | app-ae.js         | This file acts as role of flow router and it is the main code running DAS server.<br>① It handles initial processing of received packets.<br>② It initiates HTTP server with ‘listening’ mode to wait for HTTP requests target to the DAS AE HTTP server.<br>③ It handles the parsing of URL of packets and evaluate the correctness of the request body resulted of parsing. If the request is targeted to DAS Server, it forwards the request to DAS Server.<br>④ It registers itself to IN-CSE to enable a trusted communication. |
 | dasserver.js      | This file initiates DAS server and helps loading main Node JS files.<br>It also contains configuration parameters for DAS server such as defaultbodytype indicating the serialization, usecsebase<br/>indicating CSEBase name, usecseid indicating CSEID, usedbhost indicating the host address running MySQL, and usedbpass indicating the password for MySQL etc. Users can modify those configuration parameters. |
