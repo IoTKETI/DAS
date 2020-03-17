@@ -127,7 +127,7 @@ This is the list of library dependencies for DAS
 - util
 
 ## Document
-If you want more details please see the full [installation guide document](https://github.com/IoTKETI/DAS/raw/master/doc/installation.md).
+If you want more details please see the full [installation guide document](https://github.com/IoTKETI/DAS/blob/master/doc/installation.md).
 
 ## Note
 
